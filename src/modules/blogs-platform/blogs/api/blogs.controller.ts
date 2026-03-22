@@ -1,8 +1,13 @@
 import { Controller, Get, Injectable, Param, Query } from '@nestjs/common';
 import { BlogsService } from '../application/blogs.service';
+import { BlogsQueryParams } from './dto/input/query-params.dto';
+import { BlogViewDto } from './dto/view/blog-view-model.dto';
+import { ROUTES } from '../../../core/constants/routes.constants';
+import { RequestWithParamsIdAndQuery } from '../../../core/types/request.types';
+import { BaseQueryParams } from '../../../core/dto/base-query-params.dto';
 
 @Injectable()
-@Controller('blogs')
+@Controller(ROUTES.MAIN.blogs)
 export class BlogsController {
   constructor(
     private blogsService: BlogsService,
@@ -12,8 +17,8 @@ export class BlogsController {
   ) {}
 
   @Get()
-  async getAllBlogs(@Query() query: BlogQueryParams): Promise<BlogsViewDto> {
-    const sortParams = matchedData<BlogQueryParams>(req);
+  async getAllBlogs(@Query() query: BlogsQueryParams): Promise<BlogViewDto[]> {
+    const sortParams = matchedData<BlogsQueryParams>(req);
 
     const blogs = await this.blogsQueryRepository.getBlogs(sortParams);
 
@@ -22,9 +27,7 @@ export class BlogsController {
 
   @Get(':id')
   async getBlogById(@Param(':id') id: string): Promise<BlogViewDto> {
-    const blogId = req.params.id;
-
-    const blog = await this.blogsQueryRepository.getBlogByIdOrFail(blogId);
+    const blog = await this.blogsQueryRepository.getBlogByIdOrFail(id);
 
     return blog;
   }
@@ -69,7 +72,7 @@ export class BlogsController {
 
   async createBlog(
     req: RequestWithBody<BlogInputModel>,
-    res: Response<BlogViewModel>,
+    res: Response<BlogViewDto>,
   ): Promise<Response> {
     const newBlogId = await this.blogsService.createBlog(req.body);
 
