@@ -1,10 +1,27 @@
-import { Controller, Get, Injectable, Param, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Injectable,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { BlogsService } from '../application/blogs.service';
 import { BlogsQueryParams } from './dto/input/query-params.dto';
 import { BlogViewDto } from './dto/view/blog-view-model.dto';
 import { ROUTES } from '../../../core/constants/routes.constants';
-import { RequestWithParamsIdAndQuery } from '../../../core/types/request.types';
 import { BaseQueryParams } from '../../../core/dto/base-query-params.dto';
+import { PaginationViewDto } from '../../../core/dto/pagination.dto';
+import { PostViewDto } from '../../posts/api/dto/view/post-view.dto';
+import { PostForBlogInputDto } from '../../posts/api/dto/input/posts-for-blog-input.dto';
+import { BlogInputDto } from './dto/input/create-blog-input.dto';
+import { BlogsQueryRepository } from '../repository/blogs-query-repository';
+import { UpdateBlogDto } from '../application/dto/update-blog.dto';
 
 @Injectable()
 @Controller(ROUTES.MAIN.blogs)
@@ -17,10 +34,10 @@ export class BlogsController {
   ) {}
 
   @Get()
-  async getAllBlogs(@Query() query: BlogsQueryParams): Promise<BlogViewDto[]> {
-    const sortParams = matchedData<BlogsQueryParams>(req);
-
-    const blogs = await this.blogsQueryRepository.getBlogs(sortParams);
+  async getAllBlogs(
+    @Query() query: BlogsQueryParams,
+  ): Promise<PaginationViewDto<BlogViewDto>> {
+    const blogs = await this.blogsQueryRepository.getBlogs(query);
 
     return blogs;
   }
@@ -34,28 +51,20 @@ export class BlogsController {
 
   @Get(':id/posts')
   async getPostsForBlog(
-    req: RequestWithParamsIdAndQuery<BaseQueryParams>,
-    res: Response<PaginationType<PostViewModel>>,
-  ): Promise<Response> {
-    const userId = req.user?.userId;
-    const blogId = req.params.id;
-    const sortParams = matchedData<BaseQueryParams>(req);
+    @Param(':id') id: string,
+    @Query() query: BaseQueryParams,
+  ): Promise<PaginationViewDto<PostViewDto>> {
+    const posts = await this.postsQueryRepository.getPosts(query, blogId);
 
-    const posts = await this.postsQueryRepository.getPosts(
-      sortParams,
-      blogId,
-      userId,
-    );
-
-    return res.status(HttpStatus.OK).json(posts);
+    return posts;
   }
 
+  @Post(':id/posts')
   async createPostForBlog(
-    req: RequestWithParamsIdAndBody<PostForBlogInputModel>,
-    res: Response<PostViewModel>,
-  ): Promise<Response> {
-    const blogId = req.params.id;
-    const { content, shortDescription, title } = req.body;
+    @Param(':id') id: string,
+    @Body() body: PostForBlogInputDto,
+  ): Promise<PostViewDto> {
+    const { content, shortDescription, title } = body;
 
     const newPostId = await this.postsService.createPost({
       blogId,
@@ -67,38 +76,40 @@ export class BlogsController {
     const newPost =
       await this.postsQueryRepository.getPostByIdOrFail(newPostId);
 
-    return res.status(HttpStatus.CREATED).json(newPost);
+    return newPost;
   }
 
-  async createBlog(
-    req: RequestWithBody<BlogInputModel>,
-    res: Response<BlogViewDto>,
-  ): Promise<Response> {
-    const newBlogId = await this.blogsService.createBlog(req.body);
+  @Post()
+  async createBlog(@Body() body: BlogInputDto): Promise<BlogViewDto> {
+    const newBlogId = await this.blogsService.createBlog(body);
 
     const newBlog =
       await this.blogsQueryRepository.getBlogByIdOrFail(newBlogId);
 
-    return res.status(HttpStatus.CREATED).json(newBlog);
+    return newBlog;
   }
 
+  @Put(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async updateBlog(
-    req: RequestWithParamsIdAndBody<BlogInputModel>,
-    res: Response,
-  ): Promise<Response> {
-    const blogId = req.params.id;
-    const blogDto: UpdateBlogDtoModel = { ...req.body, blogId };
+    @Param(':id') id: string,
+    @Body() body: BlogInputDto,
+  ): Promise<void> {
+    await this.blogsService.updateBlog({
+      name: body.name,
+      blogId: id,
+      description: body.description,
+      websiteUrl: body.websiteUrl,
+    });
 
-    await this.blogsService.updateBlog(blogDto);
-
-    return res.sendStatus(HttpStatus.NO_CONTENT);
+    return;
   }
 
-  async deleteBlog(req: RequestWithParamsId, res: Response): Promise<Response> {
-    const blogId = req.params.id;
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteBlog(@Param(':id') id: string): Promise<void> {
+    await this.blogsService.deleteBlog(id);
 
-    await this.blogsService.deleteBlog(blogId);
-
-    return res.sendStatus(HttpStatus.NO_CONTENT);
+    return;
   }
 }
