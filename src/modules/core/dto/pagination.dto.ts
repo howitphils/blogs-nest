@@ -8,13 +8,13 @@ export class PaginationViewDto<T> {
   public static mapToView<T>(data: {
     items: T[];
     page: number;
-    size: number;
+    pageSize: number;
     totalCount: number;
   }): PaginationViewDto<T> {
     return {
       page: data.page,
-      pageSize: data.size,
-      pagesCount: Math.ceil(data.totalCount / data.size),
+      pageSize: data.pageSize,
+      pagesCount: Math.ceil(data.totalCount / data.pageSize),
       totalCount: data.totalCount,
       items: data.items,
     };

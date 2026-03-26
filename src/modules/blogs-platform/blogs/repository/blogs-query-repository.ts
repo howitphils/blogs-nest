@@ -32,8 +32,8 @@ export class BlogsQueryRepository {
 
     return PaginationViewDto.mapToView({
       totalCount,
+      pageSize,
       page: pageNumber,
-      size: pageSize,
       items: mappedBlogs,
     });
   }

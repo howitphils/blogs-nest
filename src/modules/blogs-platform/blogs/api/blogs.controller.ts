@@ -18,7 +18,7 @@ import { ROUTES } from '../../../core/constants/routes.constants';
 import { BaseQueryParams } from '../../../core/dto/base-query-params.dto';
 import { PaginationViewDto } from '../../../core/dto/pagination.dto';
 import { PostViewDto } from '../../posts/api/dto/view/post-view.dto';
-import { PostForBlogInputDto } from '../../posts/api/dto/input/posts-for-blog-input.dto';
+import { PostForBlogInputDto } from '../../posts/api/dto/input/create-posts-for-blog-input.dto';
 import { BlogInputDto } from './dto/input/create-blog-input.dto';
 import { BlogsQueryRepository } from '../repository/blogs-query-repository';
 import { PostsQueryRepository } from '../../posts/repository/posts-query-repository';
