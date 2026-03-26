@@ -4,6 +4,8 @@ import { PostLike, PostLikeSchema } from './post-like-schema';
 import { CreatePostDomainDto } from './dto/create-post-domain.dto';
 import { UpdatePostDomainDto } from './dto/update-post-domain.dto';
 import { BadRequestException } from '@nestjs/common';
+import { LikeStatuses } from '../../../core/types/like-statuses';
+import { CreatePostLikeDomainDto } from './dto/create-post-like-domain.dto';
 
 @Schema({ timestamps: true })
 export class Post {
@@ -81,6 +83,33 @@ export class Post {
       throw new BadRequestException('Post is already deleted');
     }
     this.deletedAt = new Date();
+  }
+
+  addLike(dto: CreatePostLikeDomainDto) {
+    const { status, login, postId, userId } = dto;
+
+    const newLike = PostLike.create({
+      login,
+      status,
+      postId,
+      userId,
+    });
+
+    this.likes.unshift(newLike);
+
+    if (newLike.status === LikeStatuses.LIKE) {
+      this.likesCount += 1;
+    } else if (newLike.status === LikeStatuses.DISLIKE) {
+      this.dislikesCount += 1;
+    }
+  }
+
+  updateLikesCount(newCount: number) {
+    this.likesCount = newCount;
+  }
+
+  updateDislikesCount(newCount: number) {
+    this.dislikesCount = newCount;
   }
 }
 

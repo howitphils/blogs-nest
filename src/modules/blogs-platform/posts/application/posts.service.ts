@@ -3,6 +3,8 @@ import { BlogsRepository } from '../../blogs/repository/blogs-repository';
 import { PostsRepository } from '../repository/posts-repository';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { UpdatePostLikeStatusDto } from './dto/update-post-like-status.dto';
+import { LikeStatuses } from '../../../core/types/like-statuses';
 
 @Injectable()
 export class PostsService {
@@ -43,29 +45,14 @@ export class PostsService {
     const like = post.likes.find((like) => like.userId === dto.userId);
 
     if (!like) {
-      const newLike: PostLikeDbModel = {
-        login: user.accountData.login,
+      post.addLike({
         status: dto.likeStatus,
-        postId: dto.postId,
+        postId: post.id,
         userId: dto.userId,
-        createdAt: new Date().toISOString(),
-      };
+        login: user.accountData.login,
+      });
 
-      if (dto.likeStatus === LikeStatuses.LIKE) {
-        await this.postsRepository.addPostLike(
-          dto.postId,
-          newLike,
-          post.likesCount + 1,
-          post.dislikesCount,
-        );
-      } else if (dto.likeStatus === LikeStatuses.DISLIKE) {
-        await this.postsRepository.addPostLike(
-          dto.postId,
-          newLike,
-          post.likesCount,
-          post.dislikesCount - 1,
-        );
-      }
+      await this.postsRepository.save(post);
 
       return;
     }
@@ -75,65 +62,35 @@ export class PostsService {
     // IF NONE
     if (dto.likeStatus === LikeStatuses.NONE) {
       if (like.status === LikeStatuses.LIKE) {
-        await this.postsRepository.updatePostLikeStatus(
-          dto.postId,
-          dto.userId,
-          dto.likeStatus,
-          post.likesCount - 1,
-          post.dislikesCount,
-        );
+        post.updateLikesCount(post.likesCount - 1);
       } else if (like.status === LikeStatuses.DISLIKE) {
-        await this.postsRepository.updatePostLikeStatus(
-          dto.postId,
-          dto.userId,
-          dto.likeStatus,
-          post.likesCount,
-          post.dislikesCount - 1,
-        );
+        post.updateDislikesCount(post.dislikesCount - 1);
       }
     }
 
     //IF LIKED
     if (dto.likeStatus === LikeStatuses.LIKE) {
       if (like.status === LikeStatuses.NONE) {
-        await this.postsRepository.updatePostLikeStatus(
-          dto.postId,
-          dto.userId,
-          dto.likeStatus,
-          post.likesCount + 1,
-          post.dislikesCount,
-        );
+        post.updateLikesCount(post.likesCount + 1);
       } else if (like.status === LikeStatuses.DISLIKE) {
-        await this.postsRepository.updatePostLikeStatus(
-          dto.postId,
-          dto.userId,
-          dto.likeStatus,
-          post.likesCount + 1,
-          post.dislikesCount - 1,
-        );
+        post.updateLikesCount(post.likesCount + 1);
+        post.updateDislikesCount(post.dislikesCount - 1);
       }
     }
 
     //IF DISLIKED
     if (dto.likeStatus === LikeStatuses.DISLIKE) {
       if (like.status === LikeStatuses.NONE) {
-        await this.postsRepository.updatePostLikeStatus(
-          dto.postId,
-          dto.userId,
-          dto.likeStatus,
-          post.likesCount,
-          post.dislikesCount + 1,
-        );
+        post.updateDislikesCount(post.dislikesCount + 1);
       } else if (like.status === LikeStatuses.LIKE) {
-        await this.postsRepository.updatePostLikeStatus(
-          dto.postId,
-          dto.userId,
-          dto.likeStatus,
-          post.likesCount - 1,
-          post.dislikesCount + 1,
-        );
+        post.updateDislikesCount(post.dislikesCount + 1);
+        post.updateLikesCount(post.likesCount - 1);
       }
     }
+
+    like.updateStatus(dto.likeStatus);
+
+    await this.postsRepository.save(post);
   }
 
   async deletePost(postId: string): Promise<void> {
