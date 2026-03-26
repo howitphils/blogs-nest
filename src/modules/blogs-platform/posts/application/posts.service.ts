@@ -19,13 +19,15 @@ export class PostsService {
 
     const blog = await this.blogsRepository.getBlogByIdOrFail(dto.blogId);
 
-    return this.postsRepository.createPost({
+    const postId = await this.postsRepository.createPost({
       blogId,
       blogName: blog.name,
       content,
       shortDescription,
       title,
     });
+
+    return postId;
   }
 
   async updatePost(dto: UpdatePostDto): Promise<void> {

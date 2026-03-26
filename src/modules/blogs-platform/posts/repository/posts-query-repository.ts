@@ -1,22 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Post } from '@nestjs/common';
 import { BlogsQueryRepository } from '../../blogs/repository/blogs-query-repository';
 import { BaseQueryParams } from '../../../core/dto/base-query-params.dto';
 import { PaginationViewDto } from '../../../core/dto/pagination.dto';
 import { PostViewDto } from '../api/dto/view/post-view.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Post, PostDocument } from './schemas/post-schema';
-import { PostNotFoundError } from '../../comments/application/errors/posts-errors';
 import {
   LikeStatuses,
   UsersLikeStatuses,
 } from '../../../core/types/like-statuses';
 import { PostLikeDbDto } from '../dto/post-like-db.dto';
+import type { PostDocument, PostModelType } from '../domain/post.entity';
+import { PostNotFoundError } from '../application/errors/posts-errors';
+import { PostLikeViewDto } from '../api/dto/view/post-like-view.dto';
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(
-    @InjectModel(Post.name) private PostModel: Model<Post>,
+    @InjectModel(Post.name) private PostModel: PostModelType,
     private blogsQueryRepository: BlogsQueryRepository,
   ) {}
 
@@ -112,7 +112,7 @@ export class PostsQueryRepository {
     };
   }
 
-  private getNewestLikes(likes: PostLikeDbDto[]) {
+  private getNewestLikes(likes: PostLikeDbDto[]): PostLikeViewDto[] {
     return likes
       .filter((like) => like.status === LikeStatuses.LIKE)
       .sort((a, b) => {

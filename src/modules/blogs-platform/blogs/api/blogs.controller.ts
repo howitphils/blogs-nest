@@ -21,6 +21,8 @@ import { PostViewDto } from '../../posts/api/dto/view/post-view.dto';
 import { PostForBlogInputDto } from '../../posts/api/dto/input/posts-for-blog-input.dto';
 import { BlogInputDto } from './dto/input/create-blog-input.dto';
 import { BlogsQueryRepository } from '../repository/blogs-query-repository';
+import { PostsQueryRepository } from '../../posts/repository/posts-query-repository';
+import { PostsService } from '../../posts/application/posts.service';
 
 @Injectable()
 @Controller(ROUTES.MAIN.blogs)
@@ -50,7 +52,7 @@ export class BlogsController {
 
   @Get(':id/posts')
   async getPostsForBlog(
-    @Param(':id') id: string,
+    @Param(':id') blogId: string,
     @Query() query: BaseQueryParams,
   ): Promise<PaginationViewDto<PostViewDto>> {
     const posts = await this.postsQueryRepository.getPosts(query, blogId);
@@ -60,7 +62,7 @@ export class BlogsController {
 
   @Post(':id/posts')
   async createPostForBlog(
-    @Param(':id') id: string,
+    @Param(':id') blogId: string,
     @Body() body: PostForBlogInputDto,
   ): Promise<PostViewDto> {
     const { content, shortDescription, title } = body;

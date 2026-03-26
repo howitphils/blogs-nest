@@ -3,7 +3,7 @@ import { BlogsQueryParams } from '../api/dto/input/query-params.dto';
 import { PaginationViewDto } from '../../../core/dto/pagination.dto';
 import { BlogViewDto } from '../api/dto/view/blog-view-model.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogDocument } from './schemas/blog-schema';
+import { Blog, BlogDocument } from '../domain/blog.entity';
 import { Model } from 'mongoose';
 
 @Injectable()
