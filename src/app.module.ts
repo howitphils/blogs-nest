@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { BlogsPlatformModule } from './modules/blogs-platform/blogs-platform.module';
 import { UsersAccountsModule } from './modules/users-accounts/user-accounts.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { TestingModule } from '@nestjs/testing';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     ),
     BlogsPlatformModule,
     UsersAccountsModule,
+    TestingModule,
   ],
   controllers: [],
   providers: [],

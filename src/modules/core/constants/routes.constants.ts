@@ -3,5 +3,6 @@ export const ROUTES = {
     blogs: 'blogs',
     posts: 'posts',
     users: 'users',
+    testing: 'testing',
   },
 };

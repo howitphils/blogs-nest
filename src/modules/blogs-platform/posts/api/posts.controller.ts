@@ -35,7 +35,6 @@ export class PostsController {
     return posts;
   }
 
-  // TODO:add method to query repo
   @Get(':id/comments')
   async getPostsComments(
     @Param('id') id: string,
