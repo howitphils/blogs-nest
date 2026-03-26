@@ -21,7 +21,6 @@ import { PostViewDto } from '../../posts/api/dto/view/post-view.dto';
 import { PostForBlogInputDto } from '../../posts/api/dto/input/posts-for-blog-input.dto';
 import { BlogInputDto } from './dto/input/create-blog-input.dto';
 import { BlogsQueryRepository } from '../repository/blogs-query-repository';
-import { UpdateBlogDto } from '../application/dto/update-blog.dto';
 
 @Injectable()
 @Controller(ROUTES.MAIN.blogs)

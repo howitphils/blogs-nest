@@ -3,3 +3,7 @@ export enum LikeStatuses {
   LIKE = 'Like',
   DISLIKE = 'Dislike',
 }
+
+export type UsersLikeStatuses = {
+  [key: string]: LikeStatuses;
+};
