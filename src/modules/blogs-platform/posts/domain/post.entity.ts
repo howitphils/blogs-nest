@@ -1,0 +1,93 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, Model } from 'mongoose';
+import { PostLike, PostLikeSchema } from './post-like-schema';
+import { CreatePostDomainDto } from './dto/create-post-domain.dto';
+import { UpdatePostDomainDto } from './dto/update-post-domain.dto';
+import { BadRequestException } from '@nestjs/common';
+
+@Schema({ timestamps: true })
+export class Post {
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
+    minlength: 1,
+    maxlength: 50,
+  })
+  title: string;
+
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
+    minlength: 1,
+    maxlength: 150,
+  })
+  shortDescription: string;
+
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
+    minlength: 1,
+    maxlength: 50,
+  })
+  blogName: string;
+
+  @Prop({ type: String, required: true, trim: true, minlength: 1 })
+  content: string;
+
+  @Prop({ type: Date, required: true, nullable: true, default: null })
+  deletedAt: Date | null;
+
+  @Prop({ type: String, required: true })
+  blogId: string;
+
+  @Prop({ type: [PostLikeSchema], required: true, default: [] })
+  likes: PostLike[];
+
+  @Prop({ type: Number, required: true, default: 0 })
+  likesCount: number;
+
+  @Prop({ type: Number, required: true, default: 0 })
+  dislikesCount: number;
+
+  createdAt: string;
+  updatedAt: string;
+
+  static createInstance(dto: CreatePostDomainDto): PostDocument {
+    const post = new this();
+
+    post.blogId = dto.blogId;
+    post.blogName = dto.blogName;
+    post.title = dto.title;
+    post.content = dto.content;
+    post.shortDescription = dto.shortDescription;
+
+    return post as PostDocument;
+  }
+
+  update(dto: UpdatePostDomainDto) {
+    const { blogId, content, shortDescription, title } = dto;
+
+    this.blogId = blogId;
+    this.content = content;
+    this.shortDescription = shortDescription;
+    this.title = title;
+  }
+
+  delete() {
+    if (this.deletedAt !== null) {
+      throw new BadRequestException('Post is already deleted');
+    }
+    this.deletedAt = new Date();
+  }
+}
+
+export type PostDocument = HydratedDocument<Post>;
+
+export const PostSchema = SchemaFactory.createForClass(Post);
+
+PostSchema.loadClass(Post);
+
+export type PostModelType = Model<PostDocument> & typeof Post;

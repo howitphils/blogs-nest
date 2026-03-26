@@ -1,44 +1,39 @@
-import { PostsRepository } from "./../repository/posts-repository";
-import { inject, injectable } from "inversify";
-import { BlogsRepository } from "../../blogs/repository/blogs-repository";
-import {
-  PostDbModel,
-  PostInputModel,
-  PostLikeDbModel,
-  UpdatePostDtoModel,
-  UpdatePostLikeStatusDto,
-} from "../types/posts-types";
-import { UsersRepository } from "../../users/repository/users-repository";
-import { LikeStatuses } from "../../core/types/likes-types";
+import { Injectable } from '@nestjs/common';
+import { BlogsRepository } from '../../blogs/repository/blogs-repository';
+import { PostsRepository } from '../repository/posts-repository';
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 
-@injectable()
+@Injectable()
 export class PostsService {
   constructor(
-    @inject(BlogsRepository) private blogsRepository: BlogsRepository,
-    @inject(PostsRepository) private postsRepository: PostsRepository,
-    @inject(UsersRepository) private usersRepository: UsersRepository,
+    private blogsRepository: BlogsRepository,
+    private postsRepository: PostsRepository,
+    // private usersRepository: UsersRepository,
   ) {}
 
-  async createPost(dto: PostInputModel): Promise<string> {
+  async createPost(dto: CreatePostDto): Promise<string> {
+    const { blogId, content, shortDescription, title } = dto;
+
     const blog = await this.blogsRepository.getBlogByIdOrFail(dto.blogId);
 
-    const newPost: PostDbModel = {
-      title: dto.title,
-      blogId: dto.blogId,
+    return this.postsRepository.createPost({
+      blogId,
       blogName: blog.name,
-      content: dto.content,
-      createdAt: new Date().toISOString(),
-      shortDescription: dto.shortDescription,
-      likes: [],
-      dislikesCount: 0,
-      likesCount: 0,
-    };
-
-    return this.postsRepository.createPost(newPost);
+      content,
+      shortDescription,
+      title,
+    });
   }
 
-  async updatePost(dto: UpdatePostDtoModel): Promise<void> {
-    await this.postsRepository.updatePost(dto);
+  async updatePost(dto: UpdatePostDto): Promise<void> {
+    const { blogId, content, shortDescription, postId, title } = dto;
+
+    const post = await this.postsRepository.getPostByIdOrFail(postId);
+
+    post.update({ blogId, content, shortDescription, title });
+
+    await this.postsRepository.save(post);
   }
 
   async updatePostLikeStatus(dto: UpdatePostLikeStatusDto): Promise<void> {
@@ -142,6 +137,10 @@ export class PostsService {
   }
 
   async deletePost(postId: string): Promise<void> {
-    await this.postsRepository.deletePost(postId);
+    const post = await this.postsRepository.getPostByIdOrFail(postId);
+
+    post.delete();
+
+    await this.postsRepository.save(post);
   }
 }

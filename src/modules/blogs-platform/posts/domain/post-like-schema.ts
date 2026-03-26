@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { LikeStatuses } from '../../../../core/types/like-statuses';
+import { LikeStatuses } from '../../../core/types/like-statuses';
 
-@Schema()
+@Schema({ _id: false })
 export class PostLike {
   @Prop({ type: String, required: true })
   postId: string;

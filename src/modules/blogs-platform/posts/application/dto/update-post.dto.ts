@@ -1,4 +1,5 @@
-export class PostInputDto {
+export class UpdatePostDto {
+  postId: string;
   title: string;
   shortDescription: string;
   content: string;

@@ -5,6 +5,9 @@ import { BlogsController } from './blogs/api/blogs.controller';
 import { BlogsService } from './blogs/application/blogs.service';
 import { BlogsQueryRepository } from './blogs/repository/blogs-query-repository';
 import { PostSchema } from './posts/repository/schemas/post-schema';
+import { PostsQueryRepository } from './posts/repository/posts-query-repository';
+import { PostsService } from './comments/application/posts-service';
+import { PostsRepository } from './posts/repository/posts-repository';
 
 @Module({
   imports: [
@@ -14,6 +17,12 @@ import { PostSchema } from './posts/repository/schemas/post-schema';
     ]),
   ],
   controllers: [BlogsController],
-  providers: [BlogsService, BlogsQueryRepository],
+  providers: [
+    BlogsService,
+    BlogsQueryRepository,
+    PostsQueryRepository,
+    PostsService,
+    PostsRepository,
+  ],
 })
 export class BlogsPlatformModule {}

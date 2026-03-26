@@ -1,59 +1,58 @@
-import {
-  PostDbDocument,
-  PostDbModel,
-  PostLikeDbModel,
-  UpdatePostDtoModel,
-} from "../types/posts-types";
-import { PostNotFoundError } from "../application/errors/posts-errors";
-import { injectable } from "inversify";
-import { PostModel } from "./schemas/post-schema";
-import { LikeStatuses } from "../../core/types/likes-types";
+import { InjectModel } from '@nestjs/mongoose';
+import { Injectable } from '@nestjs/common';
+import { PostNotFoundError } from '../application/errors/posts-errors';
+import { LikeStatuses } from '../../../core/types/like-statuses';
+import { Post } from '../domain/post.entity';
 
-@injectable()
+import type { PostDocument, PostModelType } from '../domain/post.entity';
+import { CreatePostDomainDto } from '../domain/dto/create-post-domain.dto';
+
+@Injectable()
 export class PostsRepository {
-  async createPost(dto: PostDbModel): Promise<string> {
-    const post = await PostModel.insertOne(dto);
+  constructor(@InjectModel(Post.name) private PostModel: PostModelType) {}
+
+  async save(post: PostDocument) {
+    await post.save();
+  }
+
+  async createPost(dto: CreatePostDomainDto): Promise<string> {
+    const post = this.PostModel.createInstance(dto);
+
+    await post.save();
 
     return post.id;
   }
 
-  async getPostByIdOrFail(postId: string): Promise<PostDbDocument> {
-    return PostModel.findById(postId).orFail(new PostNotFoundError());
+  async getPostByIdOrFail(postId: string): Promise<PostDocument> {
+    return this.PostModel.findById(postId).orFail(new PostNotFoundError());
   }
 
-  async updatePost(dto: UpdatePostDtoModel): Promise<PostDbDocument> {
-    return PostModel.findByIdAndUpdate(dto.id, {
-      title: dto.title,
-      blogId: dto.blogId,
-      content: dto.content,
-      shortDescription: dto.shortDescription,
-    }).orFail(new PostNotFoundError());
-  }
-
-  async deletePost(postId: string): Promise<PostDbDocument> {
-    return PostModel.findByIdAndDelete(postId).orFail(new PostNotFoundError());
-  }
+  // async deletePost(postId: string): Promise<PostDocument> {
+  //   return this.PostModel.findByIdAndDelete(postId).orFail(
+  //     new PostNotFoundError(),
+  //   );
+  // }
 
   async updateBlogNameForPost(blogId: string, blogName: string): Promise<void> {
-    await PostModel.updateMany({ blogId }, { blogName });
+    await this.PostModel.updateMany({ blogId }, { blogName });
   }
 
-  async addPostLike(
-    id: string,
-    like: PostLikeDbModel,
-    likesCount: number,
-    dislikesCount: number,
-  ): Promise<PostDbDocument> {
-    return PostModel.findByIdAndUpdate(id, {
-      $push: {
-        likes: like,
-      },
-      $set: {
-        likesCount,
-        dislikesCount,
-      },
-    }).orFail(new PostNotFoundError());
-  }
+  // async addPostLike(
+  //   id: string,
+  //   like: PostLikeDbDto,
+  //   likesCount: number,
+  //   dislikesCount: number,
+  // ): Promise<PostDocument> {
+  //   return this.PostModel.findByIdAndUpdate(id, {
+  //     $push: {
+  //       likes: like,
+  //     },
+  //     $set: {
+  //       likesCount,
+  //       dislikesCount,
+  //     },
+  //   }).orFail(new PostNotFoundError());
+  // }
 
   async updatePostLikeStatus(
     postId: string,
@@ -62,16 +61,16 @@ export class PostsRepository {
     likesCount: number,
     dislikesCount: number,
   ) {
-    return PostModel.updateOne(
+    return this.PostModel.updateOne(
       { _id: postId },
       {
         $set: {
-          "likes.$[elem].status": newStatus,
+          'likes.$[elem].status': newStatus,
           likesCount,
           dislikesCount,
         },
       },
-      { arrayFilters: [{ "elem.userId": userId }] },
+      { arrayFilters: [{ 'elem.userId': userId }] },
     );
   }
 }
