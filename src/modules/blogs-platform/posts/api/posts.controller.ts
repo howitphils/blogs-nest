@@ -1,3 +1,4 @@
+import { CommentsQueryRepository } from './../../comments/repository/comments-query.repository';
 import {
   Body,
   Controller,
@@ -17,6 +18,7 @@ import { PostsService } from '../application/posts.service';
 import { PostsQueryRepository } from '../repository/posts-query-repository';
 import { PaginationViewDto } from '../../../core/dto/pagination.dto';
 import { PostViewDto } from './dto/view/post-view.dto';
+import { CommentViewDto } from '../../comments/api/view/comment-view.dto';
 
 @Injectable()
 @Controller(ROUTES.MAIN.posts)
@@ -24,6 +26,7 @@ export class PostsController {
   constructor(
     private postsService: PostsService,
     private postsQueryRepository: PostsQueryRepository,
+    private commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
   @Get()
@@ -37,9 +40,16 @@ export class PostsController {
 
   @Get(':id/comments')
   async getPostsComments(
-    @Param('id') id: string,
+    @Param('id') postId: string,
     @Query() query: BaseQueryParams,
-  ) {}
+  ): Promise<PaginationViewDto<CommentViewDto>> {
+    const comments = await this.commentsQueryRepository.getComments(
+      query,
+      postId,
+    );
+
+    return comments;
+  }
 
   @Get(':id')
   async getPostById(@Param('id') id: string): Promise<PostViewDto> {
