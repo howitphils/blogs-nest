@@ -6,9 +6,13 @@ import { UsersQueryRepository } from './users/repository/users-query.repository'
 import { TokenService } from '../core/services/token.service';
 import { DateService } from '../core/services/date.service';
 import { UsersController } from './users/api/users.controller';
+import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from './users/domain/user.entity';
 
 @Module({
-  imports: [],
+  imports: [
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+  ],
   controllers: [UsersController],
   providers: [
     PasswordService,
@@ -18,5 +22,6 @@ import { UsersController } from './users/api/users.controller';
     UsersRepository,
     UsersQueryRepository,
   ],
+  exports: [UsersRepository],
 })
 export class UsersAccountsModule {}

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { BlogsPlatformModule } from './modules/blogs-platform/blogs-platform.module';
 import { UsersAccountsModule } from './modules/users-accounts/user-accounts.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { TestingModule } from '@nestjs/testing';
+import { TestingModule } from './modules/testing/testing.module';
 
 @Module({
   imports: [

@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer/types/decorators';
+import { Type } from 'class-transformer';
 
 export enum SortDirections {
   ASC = 'asc',

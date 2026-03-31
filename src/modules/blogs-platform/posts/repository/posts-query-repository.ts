@@ -1,4 +1,4 @@
-import { Injectable, Post } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BlogsQueryRepository } from '../../blogs/repository/blogs-query-repository';
 import { BaseQueryParams } from '../../../core/dto/base-query-params.dto';
 import { PaginationViewDto } from '../../../core/dto/pagination.dto';
@@ -9,7 +9,11 @@ import {
   UsersLikeStatuses,
 } from '../../../core/types/like-statuses';
 import { PostLikeDbDto } from '../dto/post-like-db.dto';
-import type { PostDocument, PostModelType } from '../domain/post.entity';
+import {
+  Post,
+  type PostDocument,
+  type PostModelType,
+} from '../domain/post.entity';
 import { PostNotFoundError } from '../application/errors/posts-errors';
 import { PostLikeViewDto } from '../api/dto/view/post-like-view.dto';
 
