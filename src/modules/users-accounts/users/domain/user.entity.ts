@@ -1,0 +1,94 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { AccountData, AccountDataSchema } from './schemas/account-data.schema';
+import {
+  EmailConfirmation,
+  EmailConfirmationSchema,
+} from './schemas/email-confirmation.schema';
+import {
+  PasswordRecovery,
+  PasswordRecoverySchema,
+} from './schemas/password-recovery.schema';
+import { BadRequestException } from '@nestjs/common';
+import { HydratedDocument, Model } from 'mongoose';
+
+@Schema({ timestamps: true })
+export class User {
+  @Prop({ type: AccountDataSchema, required: true })
+  accountData: AccountData;
+
+  @Prop({ type: EmailConfirmationSchema, required: true })
+  emailConfirmation: EmailConfirmation;
+
+  @Prop({ type: PasswordRecoverySchema, required: true })
+  passwordRecovery: PasswordRecovery;
+
+  static createInstance(
+    login: string,
+    email: string,
+    passwordHash: string,
+    confirmationCode: string,
+    expDate: Date,
+    isConfirmed: boolean,
+  ): UserDocument {
+    const user = new this();
+
+    user.accountData.login = login;
+    user.accountData.email = email;
+    user.accountData.passwordHash = passwordHash;
+
+    user.emailConfirmation.confirmationCode = confirmationCode;
+    user.emailConfirmation.expDate = expDate;
+    user.emailConfirmation.isConfirmed = isConfirmed;
+
+    return user as UserDocument;
+  }
+
+  confirmEmail() {
+    if (this.emailConfirmation.isConfirmed) {
+      throw new BadRequestException('Email is already confirmed');
+    }
+
+    if (this.emailConfirmation.expDate < new Date()) {
+      throw new BadRequestException('Confirmation code is already expired');
+    }
+
+    this.emailConfirmation.isConfirmed = true;
+    this.emailConfirmation.expDate = new Date();
+  }
+
+  updateConfirmationInfo(newCode: string, newExp: Date) {
+    if (this.emailConfirmation.isConfirmed) {
+      throw new BadRequestException('Email is already confirmed');
+    }
+
+    this.emailConfirmation.confirmationCode = newCode;
+    this.emailConfirmation.expDate = newExp;
+  }
+
+  updatePasswordRecoveryInfo(newCode: string, newExp: Date) {
+    if (!this.emailConfirmation.isConfirmed) {
+      throw new BadRequestException('Email is not confirmed');
+    }
+
+    this.passwordRecovery.recoveryCode = newCode;
+    this.passwordRecovery.expDate = newExp;
+  }
+
+  updatePasswordHash(newHash: string) {
+    if (this.passwordRecovery.expDate < new Date()) {
+      throw new BadRequestException('Recovery code is already expired');
+    }
+
+    this.accountData.passwordHash = newHash;
+    this.passwordRecovery.recoveryCode = null;
+    this.passwordRecovery.expDate = new Date();
+  }
+}
+
+export type UserDocument = HydratedDocument<User>;
+
+export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.loadClass(User);
+
+export type UserModelType = Model<UserDocument> & typeof User;
