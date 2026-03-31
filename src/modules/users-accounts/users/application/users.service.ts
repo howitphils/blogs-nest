@@ -3,16 +3,19 @@ import { UserDocument } from '../domain/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersRepository } from '../repository/users.repository';
 import { NotUniqueUserError } from '../domain/errors/not-unique-user.error';
+import { PasswordService } from '../../../core/services/password.service';
+import { TokenService } from '../../../core/services/token.service';
+import { DateService } from '../../../core/services/date.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private usersRepository: UsersRepository,
     private passwordService: PasswordService,
+    private tokenService: TokenService,
+    private dateService: DateService,
     // @inject(SessionsRepository) private sessionsRepository: SessionsRepository,
     // @inject(EmailService) private emailService: EmailService,
-    // @inject(TokenService) private tokenService: TokenService,
-    // @inject(DateService) private dateService: DateService,
   ) {}
 
   async addUser(dto: CreateUserDto): Promise<string> {

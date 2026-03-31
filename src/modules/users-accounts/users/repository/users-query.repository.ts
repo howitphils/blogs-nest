@@ -75,7 +75,7 @@ export class UsersQueryRepository {
   //   }));
   // }
 
-  mapFromDbToView(user: UserDocument): UserViewDto {
+  private mapFromDbToView(user: UserDocument): UserViewDto {
     return {
       id: user.id,
       email: user.accountData.email,
