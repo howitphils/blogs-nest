@@ -4,6 +4,6 @@ export enum LikeStatuses {
   DISLIKE = 'Dislike',
 }
 
-export type UsersLikeStatuses = {
-  [key: string]: LikeStatuses;
-};
+export class UsersLikeStatuses {
+  [key: string]: LikeStatuses; // key = id(post/comment) / value = like status
+}
