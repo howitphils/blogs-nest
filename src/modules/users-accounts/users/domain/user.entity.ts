@@ -1,3 +1,4 @@
+import { CreateUserDomainDto } from './dto/create-user-domain.dto';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { AccountData, AccountDataSchema } from './schemas/account-data.schema';
 import {
@@ -22,14 +23,16 @@ export class User {
   @Prop({ type: PasswordRecoverySchema, required: true })
   passwordRecovery: PasswordRecovery;
 
-  static createInstance(
-    login: string,
-    email: string,
-    passwordHash: string,
-    confirmationCode: string,
-    expDate: Date,
-    isConfirmed: boolean,
-  ): UserDocument {
+  static createInstance(dto: CreateUserDomainDto): UserDocument {
+    const {
+      confirmationCode,
+      email,
+      expDate,
+      isConfirmed,
+      login,
+      passwordHash,
+    } = dto;
+
     const user = new this();
 
     user.accountData.login = login;
@@ -41,6 +44,14 @@ export class User {
     user.emailConfirmation.isConfirmed = isConfirmed;
 
     return user as UserDocument;
+  }
+
+  delete() {
+    if (this.accountData.deletedAt !== null) {
+      throw new BadRequestException('User is already deleted');
+    }
+
+    this.accountData.deletedAt = new Date();
   }
 
   confirmEmail() {

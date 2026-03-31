@@ -5,10 +5,15 @@ import { User } from '../domain/user.entity';
 import type { UserDocument, UserModelType } from './../domain/user.entity';
 import { UserNotFoundError } from '../domain/errors/user-not-found.error';
 import { safeRegex } from '../../../core/utils/safe-regex';
+import { CreateUserDomainDto } from '../domain/dto/create-user-domain.dto';
 
 @Injectable()
 export class UsersRepository {
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
+
+  createUser(dto: CreateUserDomainDto): UserDocument {
+    return this.UserModel.createInstance(dto);
+  }
 
   async save(user: UserDocument) {
     await user.save();

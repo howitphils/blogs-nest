@@ -5,13 +5,14 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { UpdatePostLikeStatusDto } from './dto/update-post-like-status.dto';
 import { LikeStatuses } from '../../../core/types/like-statuses';
+import { UsersRepository } from '../../../users-accounts/users/repository/users.repository';
 
 @Injectable()
 export class PostsService {
   constructor(
     private blogsRepository: BlogsRepository,
     private postsRepository: PostsRepository,
-    // private usersRepository: UsersRepository,
+    private usersRepository: UsersRepository,
   ) {}
 
   async createPost(dto: CreatePostDto): Promise<string> {
