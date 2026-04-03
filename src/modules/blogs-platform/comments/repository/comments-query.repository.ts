@@ -18,7 +18,9 @@ import { calculateSkip } from '../../../core/utils/calculate-skip';
 import { CommentLike } from '../domain/comment-like.entity';
 
 import type { CommentLikeModelType } from '../domain/comment-like.entity';
-import { CommentNotFoundError } from '../domain/errors/comment-not-found.error';
+import { DomainException } from '../../../core/exception-filters/exceptions/domain.exception';
+import { ErrorMessages } from '../../../core/constants/error-messages.constants';
+import { DomainExceptionCode } from '../../../core/exception-filters/exceptions/domain.exception-code';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -80,7 +82,10 @@ export class CommentsQueryRepository {
     userId?: string,
   ): Promise<CommentViewDto> {
     const dbComment = await this.CommentModel.findById(id).orFail(
-      new CommentNotFoundError(),
+      new DomainException(
+        ErrorMessages.COMMENT_NOT_FOUND,
+        DomainExceptionCode.NOT_FOUND,
+      ),
     );
 
     let usersLikeStatus = LikeStatuses.NONE;

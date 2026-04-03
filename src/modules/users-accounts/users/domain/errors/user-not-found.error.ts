@@ -1,9 +1,9 @@
-import { HttpStatus } from '@nestjs/common';
-import { HttpError } from '../../../../core/exception-filters/exceptions/domain.exception';
+import { DomainException } from '../../../../core/exception-filters/exceptions/domain.exception';
+import { DomainExceptionCode } from '../../../../core/exception-filters/exceptions/domain.exception-code';
 
-export class UserNotFoundError extends HttpError {
+export class UserNotFoundError extends DomainException {
   constructor() {
-    super('User was not found', HttpStatus.NOT_FOUND);
+    super('User was not found', DomainExceptionCode.NOT_FOUND);
     this.name = 'UserNotFoundError';
   }
 }

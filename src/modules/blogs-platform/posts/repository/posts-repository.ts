@@ -1,10 +1,12 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
-import { PostNotFoundError } from '../application/errors/posts-errors';
 import { Post } from '../domain/post.entity';
 
 import type { PostDocument, PostModelType } from '../domain/post.entity';
 import { CreatePostDomainDto } from '../domain/dto/create-post-domain.dto';
+import { DomainException } from '../../../core/exception-filters/exceptions/domain.exception';
+import { ErrorMessages } from '../../../core/constants/error-messages.constants';
+import { DomainExceptionCode } from '../../../core/exception-filters/exceptions/domain.exception-code';
 
 @Injectable()
 export class PostsRepository {
@@ -23,7 +25,12 @@ export class PostsRepository {
   }
 
   async getPostByIdOrFail(postId: string): Promise<PostDocument> {
-    return this.PostModel.findById(postId).orFail(new PostNotFoundError());
+    return this.PostModel.findById(postId).orFail(
+      new DomainException(
+        ErrorMessages.POST_NOT_FOUND,
+        DomainExceptionCode.NOT_FOUND,
+      ),
+    );
   }
 
   async updateBlogNameForPost(blogId: string, blogName: string): Promise<void> {
