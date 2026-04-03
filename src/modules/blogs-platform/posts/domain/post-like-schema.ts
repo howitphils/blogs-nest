@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { LikeStatuses } from '../../../core/types/like-statuses';
+import { LikeStatuses } from '../../../core/types/like-statuses.types';
 import { CreatePostLikeDomainDto } from './dto/create-post-like-domain.dto';
 
 @Schema()

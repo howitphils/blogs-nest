@@ -4,7 +4,7 @@ import { PostsRepository } from '../repository/posts-repository';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { UpdatePostLikeStatusDto } from './dto/update-post-like-status.dto';
-import { LikeStatuses } from '../../../core/types/like-statuses';
+import { LikeStatuses } from '../../../core/types/like-statuses.types';
 import { UsersRepository } from '../../../users-accounts/users/repository/users.repository';
 
 @Injectable()

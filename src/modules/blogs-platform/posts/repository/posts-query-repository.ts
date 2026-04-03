@@ -7,7 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import {
   LikeStatuses,
   UsersLikeStatuses,
-} from '../../../core/types/like-statuses';
+} from '../../../core/types/like-statuses.types';
 import { PostLikeDbDto } from '../dto/post-like-db.dto';
 import {
   Post,

@@ -1,4 +1,4 @@
-import { LikeStatuses } from '../../../../core/types/like-statuses';
+import { LikeStatuses } from '../../../../core/types/like-statuses.types';
 
 export class UpdatePostLikeStatusDto {
   postId: string;

@@ -1,16 +1,17 @@
-import { HttpStatus } from '@nestjs/common';
-import { HttpError } from '../../../../core/exceptions/http-exception';
-import { ErrorResponse } from '../../../../core/types/error-response';
+import { DomainException } from '../../../../core/exception-filters/exceptions/domain.exception';
+import { ErrorResponse } from '../../../../core/types/error-response.types';
+import { DomainExceptionCode } from '../../../../core/exception-filters/exceptions/domain.exception-code';
 
-export class NotUniqueUserError extends HttpError {
+export class NotUniqueUserException extends DomainException {
   public errorResponse: ErrorResponse;
 
   constructor(field: string) {
-    super('', HttpStatus.BAD_REQUEST);
+    super('', DomainExceptionCode.BAD_REQUEST);
 
     this.errorResponse = {
       errorsMessages: [{ field, message: `${field} should be unique` }],
     };
-    this.name = 'NotUniqueUserError';
+
+    this.name = 'NotUniqueUserException';
   }
 }

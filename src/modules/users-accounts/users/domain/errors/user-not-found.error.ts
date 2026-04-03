@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { HttpError } from '../../../../core/exceptions/http-exception';
+import { HttpError } from '../../../../core/exception-filters/exceptions/domain.exception';
 
 export class UserNotFoundError extends HttpError {
   constructor() {

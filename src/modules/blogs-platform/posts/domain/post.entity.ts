@@ -4,7 +4,7 @@ import { PostLike, PostLikeSchema } from './post-like-schema';
 import { CreatePostDomainDto } from './dto/create-post-domain.dto';
 import { UpdatePostDomainDto } from './dto/update-post-domain.dto';
 import { BadRequestException } from '@nestjs/common';
-import { LikeStatuses } from '../../../core/types/like-statuses';
+import { LikeStatuses } from '../../../core/types/like-statuses.types';
 import { CreatePostLikeDomainDto } from './dto/create-post-like-domain.dto';
 
 @Schema({ timestamps: true })

@@ -6,7 +6,7 @@ import { CommentViewDto } from '../api/view/comment-view.dto';
 import {
   LikeStatuses,
   UsersLikeStatuses,
-} from '../../../core/types/like-statuses';
+} from '../../../core/types/like-statuses.types';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment } from '../domain/comment.entity';
 

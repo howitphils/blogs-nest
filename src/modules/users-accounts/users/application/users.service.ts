@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UserDocument } from '../domain/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersRepository } from '../repository/users.repository';
-import { NotUniqueUserError } from '../domain/errors/not-unique-user.error';
+import { NotUniqueUserException } from '../domain/errors/not-unique-user.error';
 import { PasswordService } from '../../../core/services/password.service';
 import { TokenService } from '../../../core/services/token.service';
 import { DateService } from '../../../core/services/date.service';
@@ -211,7 +211,7 @@ export class UsersService {
       const field =
         existingUser.accountData.email === email ? 'email' : 'login';
 
-      throw new NotUniqueUserError(field);
+      throw new NotUniqueUserException(field);
     }
   }
 

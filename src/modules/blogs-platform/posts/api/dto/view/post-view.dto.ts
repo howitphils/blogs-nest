@@ -1,4 +1,4 @@
-import { LikeStatuses } from '../../../../../core/types/like-statuses';
+import { LikeStatuses } from '../../../../../core/types/like-statuses.types';
 import { PostLikeViewDto } from './post-like-view.dto';
 
 export class PostViewDto {
