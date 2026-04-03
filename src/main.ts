@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './modules/core/exception-filters/all-exception.filter';
 import { DomainExceptionFilter } from './modules/core/exception-filters/domain-exception.filter';
+import { DomainValidationException } from './modules/core/exception-filters/exceptions/domain-validation.exception';
+import { formatErrors } from './modules/core/utils/format-errors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,7 +14,7 @@ async function bootstrap() {
       transform: true,
       stopAtFirstError: true,
       exceptionFactory: (errors) => {
-        console.log(errors);
+        throw new DomainValidationException(formatErrors(errors));
       },
     }),
   );

@@ -32,7 +32,7 @@ export class Blog {
   })
   websiteUrl: string;
 
-  @Prop({ type: Date, required: true, nullable: true, default: null })
+  @Prop({ type: Date, nullable: true, default: null })
   deletedAt: Date | null;
 
   updatedAt: Date;
@@ -47,7 +47,6 @@ export class Blog {
     blog.name = dto.name;
     blog.description = dto.description;
     blog.websiteUrl = dto.websiteUrl;
-    blog.createdAt = new Date();
 
     return blog as BlogDocument;
   }

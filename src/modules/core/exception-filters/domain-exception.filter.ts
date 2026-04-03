@@ -15,8 +15,9 @@ export class DomainExceptionFilter implements ExceptionFilter {
     const res = ctx.getResponse<Response>();
 
     const status = this.switchDomainCodeToHttp(exception.code);
+    const response = exception.errorResponse || { message: exception.message };
 
-    res.status(status).json({ message: exception.message });
+    return res.status(status).json(response);
   }
 
   private switchDomainCodeToHttp(code: DomainExceptionCode) {

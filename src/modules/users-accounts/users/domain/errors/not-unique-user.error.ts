@@ -3,7 +3,7 @@ import { ErrorResponse } from '../../../../core/types/error-response.types';
 import { DomainExceptionCode } from '../../../../core/exception-filters/exceptions/domain.exception-code';
 
 export class NotUniqueUserException extends DomainException {
-  public errorResponse: ErrorResponse;
+  errorResponse: ErrorResponse;
 
   constructor(field: string) {
     super('', DomainExceptionCode.BAD_REQUEST);
