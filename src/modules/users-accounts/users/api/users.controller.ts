@@ -11,14 +11,17 @@ import {
   Param,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ROUTES } from '../../../core/constants/routes.constants';
 import { UsersQueryParams } from './dto/input/user-query-params.dto';
 import { PaginationViewDto } from '../../../core/dto/pagination.dto';
 import { UserViewDto } from './dto/view/user-view.dto';
 import { UserInputDto } from './dto/input/create-user-input.dto';
+import { BasicAuthGuard } from '../../../core/guards/basic-auth.guard';
 
 @Injectable()
+@UseGuards(BasicAuthGuard)
 @Controller(ROUTES.MAIN.users)
 export class UsersController {
   constructor(

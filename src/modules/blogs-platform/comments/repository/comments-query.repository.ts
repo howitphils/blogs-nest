@@ -19,7 +19,7 @@ import { CommentLike } from '../domain/comment-like.entity';
 
 import type { CommentLikeModelType } from '../domain/comment-like.entity';
 import { DomainException } from '../../../core/exception-filters/exceptions/domain.exception';
-import { ErrorMessages } from '../../../core/constants/error-messages.constants';
+import { errorMessages } from '../../../core/constants/error-messages.constants';
 import { DomainExceptionCode } from '../../../core/exception-filters/exceptions/domain.exception-code';
 
 @Injectable()
@@ -83,7 +83,7 @@ export class CommentsQueryRepository {
   ): Promise<CommentViewDto> {
     const dbComment = await this.CommentModel.findById(id).orFail(
       new DomainException(
-        ErrorMessages.COMMENT_NOT_FOUND,
+        errorMessages.COMMENT_NOT_FOUND,
         DomainExceptionCode.NOT_FOUND,
       ),
     );

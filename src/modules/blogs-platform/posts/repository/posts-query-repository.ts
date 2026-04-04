@@ -16,7 +16,7 @@ import {
 } from '../domain/post.entity';
 import { PostLikeViewDto } from '../api/dto/view/post-like-view.dto';
 import { DomainException } from '../../../core/exception-filters/exceptions/domain.exception';
-import { ErrorMessages } from '../../../core/constants/error-messages.constants';
+import { errorMessages } from '../../../core/constants/error-messages.constants';
 import { DomainExceptionCode } from '../../../core/exception-filters/exceptions/domain.exception-code';
 
 @Injectable()
@@ -82,7 +82,7 @@ export class PostsQueryRepository {
   async getPostByIdOrFail(id: string, userId?: string): Promise<PostViewDto> {
     const dbPost = await this.PostModel.findById(id).orFail(
       new DomainException(
-        ErrorMessages.POST_NOT_FOUND,
+        errorMessages.POST_NOT_FOUND,
         DomainExceptionCode.NOT_FOUND,
       ),
     );
