@@ -9,8 +9,10 @@ import {
   PasswordRecovery,
   PasswordRecoverySchema,
 } from './schemas/password-recovery.schema';
-import { BadRequestException } from '@nestjs/common';
 import { HydratedDocument, Model } from 'mongoose';
+import { DomainException } from '../../../core/exception-filters/exceptions/domain.exception';
+import { DomainExceptionCode } from '../../../core/exception-filters/exceptions/domain.exception-code';
+import { errorMessages } from '../../../core/constants/error-messages.constants';
 
 @Schema({ timestamps: true })
 export class User {
@@ -48,7 +50,10 @@ export class User {
 
   delete() {
     if (this.accountData.deletedAt !== null) {
-      throw new BadRequestException('User is already deleted');
+      throw new DomainException(
+        errorMessages.USER_DELETED,
+        DomainExceptionCode.BAD_REQUEST,
+      );
     }
 
     this.accountData.deletedAt = new Date();
@@ -56,11 +61,17 @@ export class User {
 
   confirmEmail() {
     if (this.emailConfirmation.isConfirmed) {
-      throw new BadRequestException('Email is already confirmed');
+      throw new DomainException(
+        errorMessages.EMAIL_CONFIRMED,
+        DomainExceptionCode.BAD_REQUEST,
+      );
     }
 
     if (this.emailConfirmation.expDate < new Date()) {
-      throw new BadRequestException('Confirmation code is already expired');
+      throw new DomainException(
+        errorMessages.CONFIRMATION_CODE_EXPIRED,
+        DomainExceptionCode.BAD_REQUEST,
+      );
     }
 
     this.emailConfirmation.isConfirmed = true;
@@ -69,7 +80,10 @@ export class User {
 
   updateConfirmationInfo(newCode: string, newExp: Date) {
     if (this.emailConfirmation.isConfirmed) {
-      throw new BadRequestException('Email is already confirmed');
+      throw new DomainException(
+        errorMessages.EMAIL_CONFIRMED,
+        DomainExceptionCode.BAD_REQUEST,
+      );
     }
 
     this.emailConfirmation.confirmationCode = newCode;
@@ -78,7 +92,10 @@ export class User {
 
   updatePasswordRecoveryInfo(newCode: string, newExp: Date) {
     if (!this.emailConfirmation.isConfirmed) {
-      throw new BadRequestException('Email is not confirmed');
+      throw new DomainException(
+        errorMessages.EMAIL_NOT_CONFIRMED,
+        DomainExceptionCode.BAD_REQUEST,
+      );
     }
 
     this.passwordRecovery.recoveryCode = newCode;
@@ -87,7 +104,10 @@ export class User {
 
   updatePasswordHash(newHash: string) {
     if (this.passwordRecovery.expDate < new Date()) {
-      throw new BadRequestException('Recovery code is already expired');
+      throw new DomainException(
+        errorMessages.RECOVERY_CODE_EXPIRED,
+        DomainExceptionCode.BAD_REQUEST,
+      );
     }
 
     this.accountData.passwordHash = newHash;

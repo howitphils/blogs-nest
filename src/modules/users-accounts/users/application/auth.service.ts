@@ -8,7 +8,9 @@ import { DomainException } from '../../../core/exception-filters/exceptions/doma
 import { errorMessages } from '../../../core/constants/error-messages.constants';
 import { DomainExceptionCode } from '../../../core/exception-filters/exceptions/domain.exception-code';
 import { LoginUserDto } from './dto/login-user.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
+//TODO: email service
 @Injectable()
 export class AuthService {
   constructor(
@@ -82,7 +84,7 @@ export class AuthService {
     await this.usersRepository.save(user);
   }
 
-  async resendEmail(email: string): Promise<void> {
+  async resendConfirmationCode(email: string): Promise<void> {
     const user = await this.usersRepository.getUserByLoginOrEmail(email);
 
     if (!user) {
@@ -122,10 +124,9 @@ export class AuthService {
     //   });
   }
 
-  async updatePassword(
-    newPassword: string,
-    recoveryCode: string,
-  ): Promise<void> {
+  async updatePassword(dto: UpdatePasswordDto): Promise<void> {
+    const { newPassword, recoveryCode } = dto;
+
     const user =
       await this.usersRepository.getUserByRecoveryCodeOrFail(recoveryCode);
 
