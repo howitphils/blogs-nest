@@ -7,4 +7,6 @@ export const errorMessages = {
   VALIDATION_FAILED: 'Validation failed',
   AUTH_HEADER_REQURIED: 'Authentication header is required',
   INVALID_CREDENTIALS: 'Invalid credentials',
+  INCORRECT_AUTH_TYPE: 'Incorrect auth type',
+  INVALID_TOKEN: 'Invalid token',
 };

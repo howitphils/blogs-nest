@@ -1,15 +1,12 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Request } from 'express';
-import { Observable } from 'rxjs';
 import { DomainException } from '../exception-filters/exceptions/domain.exception';
 import { errorMessages } from '../constants/error-messages.constants';
 import { DomainExceptionCode } from '../exception-filters/exceptions/domain.exception-code';
 
 @Injectable()
 export class BasicAuthGuard implements CanActivate {
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const req = context.switchToHttp().getRequest<Request>();
 
     const authHeader = req.headers['authorization'];

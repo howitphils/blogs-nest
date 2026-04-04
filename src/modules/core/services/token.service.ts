@@ -1,57 +1,90 @@
 import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
-// import { decode, sign, verify } from 'jsonwebtoken';
+import { DomainException } from '../exception-filters/exceptions/domain.exception';
+import { errorMessages } from '../constants/error-messages.constants';
+import { DomainExceptionCode } from '../exception-filters/exceptions/domain.exception-code';
+import {
+  JwtPayloadAccess,
+  JwtPayloadRefresh,
+} from '../types/jwt-payload.types';
 
 @Injectable()
 export class TokenService {
-  // genereateToken(payload: any, secretKey: string, exp: number): string {
-  //   return sign(payload, secretKey, {
-  //     expiresIn: exp,
-  //   });
-  // }
+  constructor(private jwtService: JwtService) {}
 
-  // verifyToken(token: string, secretKey: string) {
-  //   try {
-  //     const payload = verify(token, secretKey);
-  //     return payload;
-  //   } catch (error: any) {
-  //     throw new UnauthorizedError('Token is not verified');
-  //   }
-  // }
+  async genereateToken<T extends object>(
+    payload: T,
+    secretKey: string,
+    exp: number,
+  ): Promise<string> {
+    const token = await this.jwtService.signAsync(payload, {
+      secret: secretKey,
+      expiresIn: exp,
+    });
 
-  // createAccessToken(userId: string): string {
-  //   return this.genereateToken(
-  //     { userId },
-  //     appConfig.ACCESS_JWT_SECRET,
-  //     appConfig.ACCESS_JWT_EXP,
-  //   );
-  // }
+    return token;
+  }
 
-  // createRefreshToken(userId: string, deviceId: string): string {
-  //   return this.genereateToken(
-  //     { userId, deviceId },
-  //     appConfig.REFRESH_JWT_SECRET,
-  //     appConfig.REFRESH_JWT_EXP,
-  //   );
-  // }
+  async verifyToken<T>(token: string, secretKey: string): Promise<T> {
+    try {
+      const payload = (await this.jwtService.verifyAsync(token, {
+        secret: secretKey,
+      })) as T;
 
-  // verifyAccessToken(token: string) {
-  //   return this.verifyToken(
-  //     token,
-  //     appConfig.ACCESS_JWT_SECRET,
-  //   ) as JwtPayloadAccess;
-  // }
+      return payload;
+    } catch (error: any) {
+      console.log(error);
 
-  // verifyRefreshToken(token: string) {
-  //   return this.verifyToken(
-  //     token,
-  //     appConfig.REFRESH_JWT_SECRET,
-  //   ) as JwtPayloadRefresh;
-  // }
+      throw new DomainException(
+        errorMessages.INVALID_TOKEN,
+        DomainExceptionCode.UNAUTHORIZED,
+      );
+    }
+  }
 
-  // decodeRefreshToken(token: string) {
-  //   return decode(token) as JwtPayloadRefresh;
-  // }
+  //TODO: .env
+  async createAccessToken(userId: string): Promise<string> {
+    const token = await this.genereateToken<JwtPayloadAccess>(
+      { userId },
+      'JWT_ACCESS_SECRET',
+      30000,
+    );
+
+    return token;
+  }
+
+  async createRefreshToken(userId: string, deviceId: string): Promise<string> {
+    const token = await this.genereateToken<JwtPayloadRefresh>(
+      { deviceId, userId },
+      'JWT_REFRESH_SECRET',
+      100000,
+    );
+
+    return token;
+  }
+
+  async verifyAccessToken(token: string): Promise<JwtPayloadAccess> {
+    const payload = await this.verifyToken<JwtPayloadAccess>(
+      token,
+      'JWT_ACCESS_SECRET',
+    );
+
+    return payload;
+  }
+
+  async verifyRefreshToken(token: string): Promise<JwtPayloadRefresh> {
+    const payload = await this.verifyToken<JwtPayloadRefresh>(
+      token,
+      'JWT_REFRESH_SECRET',
+    );
+
+    return payload;
+  }
+
+  decodeRefreshToken(token: string): JwtPayloadRefresh {
+    return this.jwtService.decode(token);
+  }
 
   createRandomCode() {
     return randomUUID();
