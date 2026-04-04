@@ -1,4 +1,4 @@
-export const blogInputRestrictions = {
+export const createBlogInputRestrictions = {
   name: {
     maxLength: 15,
     minLength: 3,
