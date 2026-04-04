@@ -4,8 +4,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 export class PasswordRecovery {
   @Prop({
     type: String,
-    required: true,
-    nullable: true,
     default: null,
   })
   recoveryCode: string | null;
@@ -16,6 +14,10 @@ export class PasswordRecovery {
     default: () => new Date(),
   })
   expDate: Date;
+
+  static createInstance() {
+    return new this();
+  }
 }
 
 export const PasswordRecoverySchema =

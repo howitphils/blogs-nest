@@ -19,6 +19,20 @@ export class EmailConfirmation {
     required: true,
   })
   isConfirmed: boolean;
+
+  static createInstance(
+    confirmationCode: string,
+    expDate: Date,
+    isConfirmed: boolean,
+  ) {
+    const emailConfirmation = new this();
+
+    emailConfirmation.confirmationCode = confirmationCode;
+    emailConfirmation.expDate = expDate;
+    emailConfirmation.isConfirmed = isConfirmed;
+
+    return emailConfirmation;
+  }
 }
 
 export const EmailConfirmationSchema =

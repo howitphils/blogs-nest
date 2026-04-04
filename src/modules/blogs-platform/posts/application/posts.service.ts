@@ -1,3 +1,4 @@
+import { UsersExternalRepository } from './../../../users-accounts/users/repository/users-external.repository';
 import { Injectable } from '@nestjs/common';
 import { BlogsRepository } from '../../blogs/repository/blogs-repository';
 import { PostsRepository } from '../repository/posts-repository';
@@ -5,14 +6,13 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { UpdatePostLikeStatusDto } from './dto/update-post-like-status.dto';
 import { LikeStatuses } from '../../../core/types/like-statuses.types';
-import { UsersRepository } from '../../../users-accounts/users/repository/users.repository';
 
 @Injectable()
 export class PostsService {
   constructor(
     private blogsRepository: BlogsRepository,
     private postsRepository: PostsRepository,
-    private usersRepository: UsersRepository,
+    private usersExternalRepository: UsersExternalRepository,
   ) {}
 
   async createPost(dto: CreatePostDto): Promise<string> {
@@ -43,7 +43,9 @@ export class PostsService {
 
   async updatePostLikeStatus(dto: UpdatePostLikeStatusDto): Promise<void> {
     const post = await this.postsRepository.getPostByIdOrFail(dto.postId);
-    const user = await this.usersRepository.getUserByIdOrFail(dto.userId);
+    const user = await this.usersExternalRepository.getUserByIdOrFail(
+      dto.userId,
+    );
 
     const like = post.likes.find((like) => like.userId === dto.userId);
 

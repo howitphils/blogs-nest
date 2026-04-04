@@ -5,5 +5,6 @@ export const ROUTES = {
     users: 'users',
     comments: 'comments',
     testing: 'testing',
+    auth: 'auth',
   },
 };

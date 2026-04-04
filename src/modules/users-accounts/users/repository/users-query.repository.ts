@@ -9,6 +9,7 @@ import { createUserFilter } from './utils/create-user-filter.utility';
 import { calculateSkip } from '../../../core/utils/calculate-skip';
 import { UserNotFoundError } from '../domain/errors/user-not-found.error';
 import { UsersQueryParams } from '../api/dto/input/user-query-params.dto';
+import { UserInfoViewDto } from '../api/dto/view/user-info-view.dto';
 
 @Injectable()
 export class UsersQueryRepository {
@@ -52,17 +53,17 @@ export class UsersQueryRepository {
     return this.mapFromDbToView(user);
   }
 
-  // async getMyInfo(userId: string): Promise<MeInfoViewModel> {
-  //   const user = await this.UserModel.findById(userId).orFail(
-  //     new UserNotFoundError(),
-  //   );
+  async getUserInfo(userId: string): Promise<UserInfoViewDto> {
+    const user = await this.UserModel.findById(userId).orFail(
+      new UserNotFoundError(),
+    );
 
-  //   return {
-  //     userId: user.id,
-  //     login: user.accountData.login,
-  //     email: user.accountData.email,
-  //   };
-  // }
+    return {
+      userId: user.id,
+      login: user.accountData.login,
+      email: user.accountData.email,
+    };
+  }
 
   // async getUsersSessions(userId: string): Promise<SessionViewModel[]> {
   //   const sessions = await SessionModel.find({ userId });

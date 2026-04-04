@@ -30,7 +30,6 @@ export class AccountData {
 
   @Prop({
     type: Date,
-    required: true,
     nullable: true,
     default: null,
   })
@@ -38,6 +37,16 @@ export class AccountData {
 
   createdAt: Date;
   updatedAt: Date;
+
+  static createInstance(login: string, email: string, passwordHash: string) {
+    const accountData = new this();
+
+    accountData.login = login;
+    accountData.email = email;
+    accountData.passwordHash = passwordHash;
+
+    return accountData;
+  }
 }
 
 export const AccountDataSchema = SchemaFactory.createForClass(AccountData);

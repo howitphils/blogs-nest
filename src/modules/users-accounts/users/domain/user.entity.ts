@@ -35,13 +35,13 @@ export class User {
 
     const user = new this();
 
-    user.accountData.login = login;
-    user.accountData.email = email;
-    user.accountData.passwordHash = passwordHash;
-
-    user.emailConfirmation.confirmationCode = confirmationCode;
-    user.emailConfirmation.expDate = expDate;
-    user.emailConfirmation.isConfirmed = isConfirmed;
+    user.accountData = AccountData.createInstance(login, email, passwordHash);
+    user.emailConfirmation = EmailConfirmation.createInstance(
+      confirmationCode,
+      expDate,
+      isConfirmed,
+    );
+    user.passwordRecovery = PasswordRecovery.createInstance();
 
     return user as UserDocument;
   }

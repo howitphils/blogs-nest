@@ -8,12 +8,16 @@ import { DateService } from '../core/services/date.service';
 import { UsersController } from './users/api/users.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './users/domain/user.entity';
+import { UsersExternalRepository } from './users/repository/users-external.repository';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthController } from './users/api/auth.controller';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    JwtModule, // TODO: update when config service will be added
   ],
-  controllers: [UsersController],
+  controllers: [UsersController, AuthController],
   providers: [
     PasswordService,
     TokenService,
@@ -21,7 +25,8 @@ import { User, UserSchema } from './users/domain/user.entity';
     UsersService,
     UsersRepository,
     UsersQueryRepository,
+    UsersExternalRepository,
   ],
-  exports: [UsersRepository],
+  exports: [UsersExternalRepository, TokenService],
 })
 export class UsersAccountsModule {}
