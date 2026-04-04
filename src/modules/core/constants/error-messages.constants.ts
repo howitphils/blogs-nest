@@ -9,4 +9,9 @@ export const errorMessages = {
   INVALID_CREDENTIALS: 'Invalid credentials',
   INCORRECT_AUTH_TYPE: 'Incorrect auth type',
   INVALID_TOKEN: 'Invalid token',
+  USER_DELETED: 'User is already deleted',
+  EMAIL_CONFIRMED: 'Email is already confirmed',
+  CONFIRMATION_CODE_EXPIRED: 'Confirmation code is already expired',
+  EMAIL_NOT_CONFIRMED: 'Email is not confirmed',
+  RECOVERY_CODE_EXPIRED: 'Recovery code is already expired',
 };

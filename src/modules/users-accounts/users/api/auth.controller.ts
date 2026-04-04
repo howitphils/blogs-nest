@@ -10,7 +10,7 @@ import { UserInfoViewDto } from './dto/view/user-info-view.dto';
 export class AuthController {
   constructor(private usersQueryRepository: UsersQueryRepository) {}
 
-  @Get('/me')
+  @Get('me')
   @UseGuards(JwtAuthGuard)
   async getUserInfo(@Req() req: Request): Promise<UserInfoViewDto> {
     const userId = req.user.userId;
