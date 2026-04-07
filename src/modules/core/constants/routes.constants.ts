@@ -7,4 +7,13 @@ export const ROUTES = {
     testing: 'testing',
     auth: 'auth',
   },
+  SUB: {
+    me: 'me',
+    registration: 'registration',
+    login: 'login',
+    registrationConfirmation: 'registration-confirmation',
+    registrationResending: 'registration-email-resending',
+    passwordRecovery: 'password-recovery',
+    newPassword: 'new-password',
+  },
 };

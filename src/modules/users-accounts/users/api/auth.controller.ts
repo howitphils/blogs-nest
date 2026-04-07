@@ -21,10 +21,10 @@ import { UserInputDto } from './dto/input/create-user-input.dto';
 import { ConfirmEmailInputDto } from './dto/input/confirm-email-input.dto';
 import { EmailResendingInputDto } from './dto/input/email-resending-input.dto';
 import { UpdatePasswordInputDto } from './dto/input/update-password-input.dto';
-
-//TODO: throttler
+import { SkipThrottle, ThrottlerGuard } from '@nestjs/throttler';
 
 @Injectable()
+@UseGuards(ThrottlerGuard)
 @Controller(ROUTES.MAIN.auth)
 export class AuthController {
   constructor(
@@ -33,8 +33,9 @@ export class AuthController {
     private usersService: UsersService,
   ) {}
 
-  @Get('me')
+  @Get(ROUTES.SUB.me)
   @UseGuards(JwtAuthGuard)
+  @SkipThrottle()
   async getUserInfo(@Req() req: Request): Promise<UserInfoViewDto> {
     const userId = req.user.userId;
 
@@ -43,7 +44,7 @@ export class AuthController {
     return userInfo;
   }
 
-  @Post('registration')
+  @Post(ROUTES.SUB.registration)
   @HttpCode(HttpStatus.NO_CONTENT)
   async registerUser(@Body() body: UserInputDto): Promise<void> {
     const { email, login, password } = body;
@@ -55,7 +56,8 @@ export class AuthController {
     });
   }
 
-  @Post('login')
+  @Post(ROUTES.SUB.login)
+  @SkipThrottle()
   async loginUser(
     @Body() body: LoginInputDto,
   ): Promise<{ accessToken: string }> {
@@ -69,7 +71,7 @@ export class AuthController {
     return accessToken;
   }
 
-  @Post('registration-confirmation')
+  @Post(ROUTES.SUB.registrationConfirmation)
   @HttpCode(HttpStatus.NO_CONTENT)
   async confirmRegistration(@Body() body: ConfirmEmailInputDto): Promise<void> {
     const { code } = body;
@@ -77,7 +79,7 @@ export class AuthController {
     await this.authService.confirmEmail(code);
   }
 
-  @Post('registration-email-resending')
+  @Post(ROUTES.SUB.registrationResending)
   @HttpCode(HttpStatus.NO_CONTENT)
   async resendConfirmationCode(
     @Body() body: EmailResendingInputDto,
@@ -87,7 +89,7 @@ export class AuthController {
     await this.authService.resendConfirmationCode(email);
   }
 
-  @Post('password-recovery')
+  @Post(ROUTES.SUB.passwordRecovery)
   @HttpCode(HttpStatus.NO_CONTENT)
   async recoverPassword(@Body() body: EmailResendingInputDto): Promise<void> {
     const { email } = body;
@@ -95,7 +97,7 @@ export class AuthController {
     await this.authService.recoverPassword(email);
   }
 
-  @Post('new-password')
+  @Post(ROUTES.SUB.newPassword)
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePassword(@Body() body: UpdatePasswordInputDto): Promise<void> {
     const { newPassword, recoveryCode } = body;

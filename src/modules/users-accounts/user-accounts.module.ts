@@ -11,17 +11,28 @@ import { User, UserSchema } from './users/domain/user.entity';
 import { UsersExternalRepository } from './users/repository/users-external.repository';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './users/api/auth.controller';
+import { AuthService } from './users/application/auth.service';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    JwtModule, // TODO: update when config service will be added
+    JwtModule, // TODO: update when config service will be added (register async)
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 10000, // TODO: .env
+          limit: 3,
+        },
+      ],
+    }),
   ],
   controllers: [UsersController, AuthController],
   providers: [
     PasswordService,
     TokenService,
     DateService,
+    AuthService,
     UsersService,
     UsersRepository,
     UsersQueryRepository,
