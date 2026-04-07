@@ -9,6 +9,7 @@ import { errorMessages } from '../../../core/constants/error-messages.constants'
 import { DomainExceptionCode } from '../../../core/exception-filters/exceptions/domain.exception-code';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { EmailService } from '../../../core/services/email-service/email.service';
 
 //TODO: email service
 
@@ -19,6 +20,7 @@ export class AuthService {
     private tokenService: TokenService,
     private dateService: DateService,
     private passwordService: PasswordService,
+    private emailService: EmailService,
   ) {}
 
   async loginUser(dto: LoginUserDto): Promise<{ accessToken: string }> {
@@ -99,11 +101,11 @@ export class AuthService {
 
     await this.usersRepository.save(user);
 
-    // this.emailService
-    //   .sendRegistrationEmail(email, newConfirmationCode)
-    //   .catch((err) => {
-    //     console.log(appSettings.emailSubjects.registration, err);
-    //   });
+    this.emailService
+      .sendRegistrationEmail(email, newConfirmationCode)
+      .catch((err) => {
+        console.log('registration', err);
+      });
   }
 
   async recoverPassword(email: string): Promise<void> {
@@ -118,11 +120,11 @@ export class AuthService {
 
     await this.usersRepository.save(user);
 
-    // this.emailService
-    //   .sendPasswordRecoveryEmail(email, recoveryCode)
-    //   .catch((err) => {
-    //     console.log(appSettings.emailSubjects.passwordRecovery, err);
-    //   });
+    this.emailService
+      .sendPasswordRecoveryEmail(email, recoveryCode)
+      .catch((err) => {
+        console.log('password recovery', err);
+      });
   }
 
   async updatePassword(dto: UpdatePasswordDto): Promise<void> {

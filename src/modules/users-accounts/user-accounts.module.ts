@@ -14,6 +14,8 @@ import { AuthController } from './users/api/auth.controller';
 import { AuthService } from './users/application/auth.service';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AccessJwtStrategy } from '../core/guards/strategies/access-jwt.strategy';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { EmailService } from '../core/services/email-service/email.service';
 
 @Module({
   imports: [
@@ -27,12 +29,19 @@ import { AccessJwtStrategy } from '../core/guards/strategies/access-jwt.strategy
         },
       ],
     }),
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.yandex.by',
+        auth: { user: 'testforback@yandex.by', pass: 'duwyztthovcddhhz' },
+      },
+    }), //TODO: .env
   ],
   controllers: [UsersController, AuthController],
   providers: [
     PasswordService,
     TokenService,
     DateService,
+    EmailService,
     AccessJwtStrategy,
     AuthService,
     UsersService,
