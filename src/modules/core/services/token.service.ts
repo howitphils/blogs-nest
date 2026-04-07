@@ -8,6 +8,7 @@ import {
   JwtPayloadAccess,
   JwtPayloadRefresh,
 } from '../types/jwt-payload.types';
+import { secretKeyAccess } from '../guards/secret-key';
 
 @Injectable()
 export class TokenService {
@@ -47,7 +48,7 @@ export class TokenService {
   async createAccessToken(userId: string): Promise<string> {
     const token = await this.genereateToken<JwtPayloadAccess>(
       { userId },
-      'JWT_ACCESS_SECRET',
+      secretKeyAccess,
       30000,
     );
 
@@ -67,7 +68,7 @@ export class TokenService {
   async verifyAccessToken(token: string): Promise<JwtPayloadAccess> {
     const payload = await this.verifyToken<JwtPayloadAccess>(
       token,
-      'JWT_ACCESS_SECRET',
+      secretKeyAccess,
     );
 
     return payload;

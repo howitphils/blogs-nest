@@ -1,4 +1,4 @@
-import { TokenService } from './../services/token.service';
+import { TokenService } from '../services/token.service';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { DomainException } from '../exception-filters/exceptions/domain.exception';
@@ -6,7 +6,7 @@ import { errorMessages } from '../constants/error-messages.constants';
 import { DomainExceptionCode } from '../exception-filters/exceptions/domain.exception-code';
 
 @Injectable()
-export class JwtAuthGuard implements CanActivate {
+export class AccessTokenGuard implements CanActivate {
   constructor(private tokenService: TokenService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -25,6 +25,7 @@ export class JwtAuthGuard implements CanActivate {
 
   private parseAuthHeader(req: Request): string {
     const authHeader = req.headers['authorization'];
+
     if (!authHeader) {
       throw new DomainException(
         errorMessages.AUTH_HEADER_REQURIED,

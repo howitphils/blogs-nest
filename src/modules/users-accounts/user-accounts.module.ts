@@ -13,6 +13,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './users/api/auth.controller';
 import { AuthService } from './users/application/auth.service';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { AccessJwtStrategy } from '../core/guards/strategies/access-jwt.strategy';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     PasswordService,
     TokenService,
     DateService,
+    AccessJwtStrategy,
     AuthService,
     UsersService,
     UsersRepository,

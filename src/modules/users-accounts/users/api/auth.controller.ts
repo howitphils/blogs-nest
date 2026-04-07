@@ -13,7 +13,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ROUTES } from '../../../core/constants/routes.constants';
-import { JwtAuthGuard } from '../../../core/guards/jwt-auth.guard';
 import type { Request } from 'express';
 import { UserInfoViewDto } from './dto/view/user-info-view.dto';
 import { LoginInputDto } from './dto/input/login-user-input.dto';
@@ -22,6 +21,7 @@ import { ConfirmEmailInputDto } from './dto/input/confirm-email-input.dto';
 import { EmailResendingInputDto } from './dto/input/email-resending-input.dto';
 import { UpdatePasswordInputDto } from './dto/input/update-password-input.dto';
 import { SkipThrottle, ThrottlerGuard } from '@nestjs/throttler';
+import { AccessTokenGuard } from '../../../core/guards/access-token.guard';
 
 @Injectable()
 @UseGuards(ThrottlerGuard)
@@ -34,7 +34,7 @@ export class AuthController {
   ) {}
 
   @Get(ROUTES.SUB.me)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   @SkipThrottle()
   async getUserInfo(@Req() req: Request): Promise<UserInfoViewDto> {
     const userId = req.user.userId;
