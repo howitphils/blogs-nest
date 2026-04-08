@@ -15,5 +15,6 @@ export const ROUTES = {
     registrationResending: 'registration-email-resending',
     passwordRecovery: 'password-recovery',
     newPassword: 'new-password',
+    allData: 'all-data',
   },
 };

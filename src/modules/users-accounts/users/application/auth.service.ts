@@ -11,8 +11,6 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { EmailService } from '../../../core/services/email-service/email.service';
 
-//TODO: email service
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -104,7 +102,7 @@ export class AuthService {
     this.emailService
       .sendRegistrationEmail(email, newConfirmationCode)
       .catch((err) => {
-        console.log('registration', err);
+        console.log('registration resending', err);
       });
   }
 

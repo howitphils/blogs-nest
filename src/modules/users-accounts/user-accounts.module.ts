@@ -32,7 +32,9 @@ import { EmailService } from '../core/services/email-service/email.service';
     MailerModule.forRoot({
       transport: {
         host: 'smtp.yandex.by',
-        auth: { user: 'testforback@yandex.by', pass: 'duwyztthovcddhhz' },
+        port: 465,
+        secure: true,
+        auth: { user: 't.test1n9@yandex.by', pass: 'sekdkanopkcescog' },
       },
     }), //TODO: .env
   ],

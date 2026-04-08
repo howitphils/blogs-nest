@@ -6,6 +6,7 @@ import { NotUniqueUserException } from '../domain/errors/not-unique-user.error';
 import { PasswordService } from '../../../core/services/password.service';
 import { TokenService } from '../../../core/services/token.service';
 import { DateService } from '../../../core/services/date.service';
+import { EmailService } from '../../../core/services/email-service/email.service';
 
 @Injectable()
 export class UsersService {
@@ -14,7 +15,7 @@ export class UsersService {
     private passwordService: PasswordService,
     private tokenService: TokenService,
     private dateService: DateService,
-    // @inject(EmailService) private emailService: EmailService,
+    private emailService: EmailService,
   ) {}
 
   async addUser(dto: CreateUserDto): Promise<string> {
@@ -32,13 +33,13 @@ export class UsersService {
 
     const user = await this.userFactory(dto, false);
 
-    await this.usersRepository.save(user);
+    // await this.usersRepository.save(user);
 
-    // this.emailService
-    //   .sendRegistrationEmail(dto.email, user.emailConfirmation.confirmationCode)
-    //   .catch((err) => {
-    //     console.log(appSettings.emailSubjects.registration, err);
-    //   });
+    this.emailService
+      .sendRegistrationEmail(dto.email, user.emailConfirmation.confirmationCode)
+      .catch((err) => {
+        console.log('registration', err);
+      });
   }
 
   async deleteUser(id: string): Promise<void> {
