@@ -12,7 +12,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { BlogsService } from '../application/blogs.service';
-import { BlogsQueryParams } from './dto/input/query-params.dto';
+import { BlogsQueryParams } from './dto/input/blogs-query-params.dto';
 import { BlogViewDto } from './dto/view/blog-view-model.dto';
 import { ROUTES } from '../../../core/constants/routes.constants';
 import { BaseQueryParams } from '../../../core/dto/base-query-params.dto';
