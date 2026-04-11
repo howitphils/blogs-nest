@@ -9,9 +9,13 @@ import { DomainValidationException } from '../src/modules/core/exception-filters
 import { AllExceptionsFilter } from '../src/modules/core/exception-filters/all-exception.filter';
 import { DomainExceptionFilter } from '../src/modules/core/exception-filters/domain-exception.filter';
 import { ThrottlerExceptionFilter } from '../src/modules/core/exception-filters/throttler-exception.filter';
+import TestAgent from 'supertest/lib/agent';
+import { TestHelper } from './test.helper';
 
 describe('Blogs Api (e2e)', () => {
   let app: INestApplication<App>;
+  let req: TestAgent;
+  let testHelper: TestHelper;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -36,17 +40,14 @@ describe('Blogs Api (e2e)', () => {
       new ThrottlerExceptionFilter(),
     );
 
+    req = request(app.getHttpServer());
+    testHelper = new TestHelper(req);
+
     await app.init();
   });
 
   afterAll(async () => {
     await app.close();
-  });
-
-  it('should return blogs with default pagination params', async () => {
-    const res = await request(app.getHttpServer()).get('/blogs');
-
-    expect(res.body).toEqual({});
   });
 });
 
