@@ -1,65 +1,12 @@
-import {
-  describe,
-  it,
-  beforeEach,
-  expect,
-  afterAll,
-  beforeAll,
-} from '@jest/globals';
-import { Test, TestingModule } from '@nestjs/testing';
-import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
-import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
-import { formatErrors } from '../src/modules/core/utils/format-errors';
-import { DomainValidationException } from '../src/modules/core/exception-filters/exceptions/domain-validation.exception';
-import { AllExceptionsFilter } from '../src/modules/core/exception-filters/all-exception.filter';
-import { DomainExceptionFilter } from '../src/modules/core/exception-filters/domain-exception.filter';
-import { ThrottlerExceptionFilter } from '../src/modules/core/exception-filters/throttler-exception.filter';
-import TestAgent from 'supertest/lib/agent';
-import { TestHelper } from './test.helper';
+import { describe, it, expect, afterAll, beforeAll } from '@jest/globals';
+import { HttpStatus } from '@nestjs/common';
 import { PaginationViewDto } from '../src/modules/core/dto/pagination.dto';
 import { BlogViewDto } from '../src/modules/blogs-platform/blogs/api/dto/view/blog-view-model.dto';
 import { ErrorResponse } from '../src/modules/core/types/error-response.types';
+import { defaultQueryParams } from '../src/modules/core/constants/query-params.constants';
+import { req, testHelper } from './test.setup';
 
 describe('Blogs Api (e2e)', () => {
-  let app: INestApplication<App>;
-  let req: TestAgent;
-  let testHelper: TestHelper;
-
-  beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-
-    app.useGlobalPipes(
-      new ValidationPipe({
-        transform: true,
-        stopAtFirstError: true,
-        exceptionFactory: (errors) => {
-          throw new DomainValidationException(formatErrors(errors));
-        },
-      }),
-    );
-
-    app.useGlobalFilters(
-      new AllExceptionsFilter(),
-      new DomainExceptionFilter(),
-      new ThrottlerExceptionFilter(),
-    );
-
-    req = request(app.getHttpServer());
-    testHelper = new TestHelper(req);
-
-    await app.init();
-  });
-
-  afterAll(async () => {
-    await app.close();
-  });
-
   describe('GET /blogs', () => {
     beforeAll(async () => {
       await testHelper.createBlogsInDb(15);
@@ -77,11 +24,11 @@ describe('Blogs Api (e2e)', () => {
 
       expect(res.status).toBe(HttpStatus.OK);
 
-      expect(res.body.page).toBe(1);
-      expect(res.body.pageSize).toBe(10);
+      expect(res.body.page).toBe(defaultQueryParams.pageNumber);
+      expect(res.body.pageSize).toBe(defaultQueryParams.pageSize);
       expect(res.body.pagesCount).toBe(2);
       expect(res.body.totalCount).toBe(15);
-      expect(res.body.items.length).toBe(10);
+      expect(res.body.items.length).toBe(defaultQueryParams.pageSize);
       expect(res.body.items[0]).toEqual({
         id: expect.any(String),
         name: 'blog15',
