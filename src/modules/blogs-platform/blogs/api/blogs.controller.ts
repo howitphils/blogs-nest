@@ -23,6 +23,7 @@ import { BlogInputDto } from './dto/input/create-blog-input.dto';
 import { BlogsQueryRepository } from '../repository/blogs-query-repository';
 import { PostsQueryRepository } from '../../posts/repository/posts-query-repository';
 import { PostsService } from '../../posts/application/posts.service';
+import { MongoIdValidationPipe } from '../../../core/pipes/MongoIdValidation.pipe';
 
 @Injectable()
 @Controller(ROUTES.MAIN.blogs)
@@ -44,7 +45,9 @@ export class BlogsController {
   }
 
   @Get(':id')
-  async getBlogById(@Param(':id') id: string): Promise<BlogViewDto> {
+  async getBlogById(
+    @Param('id', MongoIdValidationPipe) id: string,
+  ): Promise<BlogViewDto> {
     const blog = await this.blogsQueryRepository.getBlogByIdOrFail(id);
 
     return blog;

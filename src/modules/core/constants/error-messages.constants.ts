@@ -15,4 +15,5 @@ export const errorMessages = {
   EMAIL_NOT_CONFIRMED: 'Email is not confirmed',
   RECOVERY_CODE_EXPIRED: 'Recovery code is already expired',
   TOO_MANY_REQUESTS: 'Too many requests',
+  INCORRECT_ID_TYPE: 'Incorrect id type',
 };

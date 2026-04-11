@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb';
 import { HttpStatus } from '@nestjs/common';
 import { BlogInputDto } from '../src/modules/blogs-platform/blogs/api/dto/input/create-blog-input.dto';
 import TestAgent from 'supertest/lib/agent';
+import { BlogViewDto } from '../src/modules/blogs-platform/blogs/api/dto/view/blog-view-model.dto';
 
 // type UserOverridesType = {
 //   accountData?: {
@@ -65,14 +66,16 @@ export class TestHelper {
     };
   }
 
-  async createBlogInDb(name?: string): Promise<void> {
+  async createBlogInDb(name?: string): Promise<string> {
     const blogInputDto = this.createBlogInputDto(name);
 
-    await this.req
+    const res = (await this.req
       .post('/blogs')
       .set('Authorization', this.getBasicAuthHeader())
       .send(blogInputDto)
-      .expect(HttpStatus.CREATED);
+      .expect(HttpStatus.CREATED)) as { body: BlogViewDto };
+
+    return res.body.id;
   }
 
   createUpdatedBlogInputDto(): BlogInputDto {
