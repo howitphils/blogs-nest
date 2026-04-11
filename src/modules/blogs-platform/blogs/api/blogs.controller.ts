@@ -10,6 +10,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { BlogsService } from '../application/blogs.service';
 import { BlogsQueryParams } from './dto/input/blogs-query-params.dto';
@@ -24,6 +25,7 @@ import { BlogsQueryRepository } from '../repository/blogs-query-repository';
 import { PostsQueryRepository } from '../../posts/repository/posts-query-repository';
 import { PostsService } from '../../posts/application/posts.service';
 import { MongoIdValidationPipe } from '../../../core/pipes/MongoIdValidation.pipe';
+import { BasicAuthGuard } from '../../../core/guards/basic-auth.guard';
 
 @Injectable()
 @Controller(ROUTES.MAIN.blogs)
@@ -64,6 +66,7 @@ export class BlogsController {
   }
 
   @Post(':id/posts')
+  @UseGuards(BasicAuthGuard)
   async createPostForBlog(
     @Param(':id') blogId: string,
     @Body() body: PostForBlogInputDto,
@@ -84,6 +87,7 @@ export class BlogsController {
   }
 
   @Post()
+  @UseGuards(BasicAuthGuard)
   async createBlog(@Body() body: BlogInputDto): Promise<BlogViewDto> {
     const newBlogId = await this.blogsService.createBlog(body);
 
@@ -95,6 +99,7 @@ export class BlogsController {
 
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(BasicAuthGuard)
   async updateBlog(
     @Param(':id') id: string,
     @Body() body: BlogInputDto,
@@ -110,8 +115,9 @@ export class BlogsController {
   }
 
   @Delete(':id')
+  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBlog(@Param(':id') id: string): Promise<void> {
+  async deleteBlog(@Param('id') id: string): Promise<void> {
     await this.blogsService.deleteBlog(id);
 
     return;

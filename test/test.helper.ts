@@ -1,8 +1,11 @@
+import { PostForBlogInputDto } from './../src/modules/blogs-platform/posts/api/dto/input/create-posts-for-blog-input.dto';
 import { ObjectId } from 'mongodb';
 import { HttpStatus } from '@nestjs/common';
 import { BlogInputDto } from '../src/modules/blogs-platform/blogs/api/dto/input/create-blog-input.dto';
 import TestAgent from 'supertest/lib/agent';
 import { BlogViewDto } from '../src/modules/blogs-platform/blogs/api/dto/view/blog-view-model.dto';
+import { PostInputDto } from '../src/modules/blogs-platform/posts/api/dto/input/create-post-input.dto';
+import { PostViewDto } from '../src/modules/blogs-platform/posts/api/dto/view/post-view.dto';
 
 // type UserOverridesType = {
 //   accountData?: {
@@ -86,50 +89,44 @@ export class TestHelper {
     };
   }
 
-  // // POSTS
-  // createPostInputDto(blogId: string): PostInputModel {
-  //   return {
-  //     title: 'Test Post',
-  //     shortDescription: 'This is a test post short description',
-  //     content: 'This is the content of the test post',
-  //     blogId: blogId,
-  //   };
-  // }
+  // POSTS
+  createPostInputDto(blogId: string, title?: string): PostInputDto {
+    return {
+      title: title || 'Test Post',
+      shortDescription: 'This is a test post short description',
+      content: 'This is the content of the test post',
+      blogId: blogId,
+    };
+  }
 
-  // createUpdatedPostInputDto(blogId: string): PostInputModel {
-  //   return {
-  //     title: 'Updated',
-  //     content: 'Updated',
-  //     blogId,
-  //     shortDescription: 'Updated',
-  //   };
-  // }
+  createUpdatedPostInputDto(blogId: string): PostInputDto {
+    return {
+      title: 'Updated',
+      content: 'Updated',
+      blogId,
+      shortDescription: 'Updated',
+    };
+  }
 
-  // createPostForBlogInputDto(): PostForBlogInputModel {
-  //   return {
-  //     title: 'Test Post',
-  //     shortDescription: 'This is a test post short description',
-  //     content: 'This is the content of the test post',
-  //   };
-  // }
+  createPostForBlogInputDto(): PostForBlogInputDto {
+    return {
+      title: 'Test Post',
+      shortDescription: 'This is a test post short description',
+      content: 'This is the content of the test post',
+    };
+  }
 
-  // async createPostInDb(title?: string, blogId?: string): Promise<string> {
-  //   const postDto: PostDbModel = {
-  //     title: title || 'new post',
-  //     blogId: blogId || 'some-blog',
-  //     blogName: 'random-blog',
-  //     content: 'content',
-  //     shortDescription: 'description',
-  //     createdAt: new Date().toISOString(),
-  //     likes: [],
-  //     dislikesCount: 0,
-  //     likesCount: 0,
-  //   };
+  async createPostInDb(blogId: string, title?: string): Promise<string> {
+    const postInputDto = this.createPostInputDto(blogId, title);
 
-  //   const post = await PostModel.insertOne(postDto);
+    const res = (await this.req
+      .post('/posts')
+      .set('Authorization', this.getBasicAuthHeader())
+      .send(postInputDto)
+      .expect(HttpStatus.CREATED)) as { body: PostViewDto };
 
-  //   return post.id;
-  // }
+    return res.body.id;
+  }
 
   // async postsCount(): Promise<number> {
   //   return PostModel.countDocuments();
@@ -270,11 +267,11 @@ export class TestHelper {
   //   }
   // }
 
-  // async createPostsForBlogInDb(amount: number, blogId: string) {
-  //   for (let i = 1; i <= amount; i++) {
-  //     await testHelper.createPostInDb(`postForBlog${i}`, blogId);
-  //   }
-  // }
+  async createPostsForBlogInDb(amount: number, blogId: string) {
+    for (let i = 1; i <= amount; i++) {
+      await this.createPostInDb(blogId, `postForBlog${i}`);
+    }
+  }
 
   // async createUsersInDb(amount: number) {
   //   for (let i = 1; i <= amount; i++) {
@@ -290,13 +287,13 @@ export class TestHelper {
   //   }
   // }
 
-  // // CUSTOM REQUESTS
-  // async makePostRequest(path: string, dto: any) {
-  //   return this.req
-  //     .post(path)
-  //     .set('Authorization', testHelper.getBasicAuthHeader())
-  //     .send(dto);
-  // }
+  // CUSTOM REQUESTS
+  async makePostRequest(path: string, dto: any) {
+    return this.req
+      .post(path)
+      .set('Authorization', this.getBasicAuthHeader())
+      .send(dto);
+  }
 
   // async makePostRequestJwt(path: string, token: string, dto: any) {
   //   return this.req
@@ -305,12 +302,12 @@ export class TestHelper {
   //     .send(dto);
   // }
 
-  // async makePutRequest(path: string, dto: any) {
-  //   return this.req
-  //     .put(path)
-  //     .set('Authorization', testHelper.getBasicAuthHeader())
-  //     .send(dto);
-  // }
+  async makePutRequest(path: string, dto: any) {
+    return this.req
+      .put(path)
+      .set('Authorization', this.getBasicAuthHeader())
+      .send(dto);
+  }
 
   // async makeRequestsLimit(path: string) {
   //   for (let i = 1; this.i <= appConfig.REQUEST_LIMIT; i++) {
