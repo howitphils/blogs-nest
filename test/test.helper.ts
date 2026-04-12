@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { PostForBlogInputDto } from './../src/modules/blogs-platform/posts/api/dto/input/create-posts-for-blog-input.dto';
 import { ObjectId } from 'mongodb';
 import { HttpStatus } from '@nestjs/common';
@@ -71,7 +72,6 @@ export class TestHelper {
 
   async createBlogInDb(name?: string): Promise<string> {
     const blogInputDto = this.createBlogInputDto(name);
-
     const res = (await this.req
       .post('/blogs')
       .set('Authorization', this.getBasicAuthHeader())

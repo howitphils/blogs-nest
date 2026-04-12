@@ -5,6 +5,7 @@ export const errorMessages = {
   POST_NOT_FOUND: 'Post was not found',
   BLOG_NOT_FOUND: 'Blog was not found',
   BLOG_DELETED: 'Blog is already deleted',
+  POST_DELETED: 'Post is already deleted',
   VALIDATION_FAILED: 'Validation failed',
   AUTH_HEADER_REQURIED: 'Authentication header is required',
   INVALID_CREDENTIALS: 'Invalid credentials',

@@ -8,7 +8,7 @@ import { TestHelper } from './test.helper';
 import { App } from 'supertest/types';
 import { setupApp } from '../src/setup/app.setup';
 
-let app: INestApplication<App>;
+export let app: INestApplication<App>;
 export let req: TestAgent;
 export let testHelper: TestHelper;
 

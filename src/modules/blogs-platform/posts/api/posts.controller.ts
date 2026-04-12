@@ -4,6 +4,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Injectable,
   Param,
   Post,
@@ -21,6 +23,7 @@ import { PaginationViewDto } from '../../../core/dto/pagination.dto';
 import { PostViewDto } from './dto/view/post-view.dto';
 import { CommentViewDto } from '../../comments/api/view/comment-view.dto';
 import { BasicAuthGuard } from '../../../core/guards/basic-auth.guard';
+import { MongoIdValidationPipe } from '../../../core/pipes/MongoIdValidation.pipe';
 
 @Injectable()
 @Controller(ROUTES.MAIN.posts)
@@ -42,7 +45,7 @@ export class PostsController {
 
   @Get(':id/comments')
   async getPostsComments(
-    @Param('id') postId: string,
+    @Param('id', MongoIdValidationPipe) postId: string,
     @Query() query: BaseQueryParams,
   ): Promise<PaginationViewDto<CommentViewDto>> {
     const comments = await this.commentsQueryRepository.getComments(
@@ -54,7 +57,9 @@ export class PostsController {
   }
 
   @Get(':id')
-  async getPostById(@Param('id') id: string): Promise<PostViewDto> {
+  async getPostById(
+    @Param('id', MongoIdValidationPipe) id: string,
+  ): Promise<PostViewDto> {
     const post = await this.postsQueryRepository.getPostByIdOrFail(id);
 
     return post;
@@ -77,8 +82,10 @@ export class PostsController {
   }
 
   @Put(':id')
+  @UseGuards(BasicAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async updatePost(
-    @Param('id') postId: string,
+    @Param('id', MongoIdValidationPipe) postId: string,
     @Body() body: UpdatePostInputDto,
   ): Promise<void> {
     const { blogId, content, shortDescription, title } = body;
@@ -93,7 +100,9 @@ export class PostsController {
   }
 
   @Delete(':id')
-  async deletePost(@Param(':id') id: string) {
+  @UseGuards(BasicAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deletePost(@Param('id', MongoIdValidationPipe) id: string) {
     await this.postsService.deletePost(id);
   }
 }

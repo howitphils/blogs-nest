@@ -3,9 +3,11 @@ import { HydratedDocument, Model } from 'mongoose';
 import { PostLike, PostLikeSchema } from './post-like-schema';
 import { CreatePostDomainDto } from './dto/create-post-domain.dto';
 import { UpdatePostDomainDto } from './dto/update-post-domain.dto';
-import { BadRequestException } from '@nestjs/common';
 import { LikeStatuses } from '../../../core/types/like-statuses.types';
 import { CreatePostLikeDomainDto } from './dto/create-post-like-domain.dto';
+import { DomainException } from '../../../core/exception-filters/exceptions/domain.exception';
+import { errorMessages } from '../../../core/constants/error-messages.constants';
+import { DomainExceptionCode } from '../../../core/exception-filters/exceptions/domain.exception-code';
 
 @Schema({ timestamps: true })
 export class Post {
@@ -80,7 +82,10 @@ export class Post {
 
   delete() {
     if (this.deletedAt !== null) {
-      throw new BadRequestException('Post is already deleted');
+      throw new DomainException(
+        errorMessages.POST_DELETED,
+        DomainExceptionCode.NOT_FOUND,
+      );
     }
     this.deletedAt = new Date();
   }
