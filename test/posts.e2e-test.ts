@@ -97,7 +97,7 @@ describe('Posts API', () => {
           myStatus: LikeStatuses.NONE,
           newestLikes: [],
         },
-      }); // Testing mapping + sorting direction(asc)
+      });
     });
   });
 

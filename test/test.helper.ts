@@ -7,23 +7,26 @@ import TestAgent from 'supertest/lib/agent';
 import { BlogViewDto } from '../src/modules/blogs-platform/blogs/api/dto/view/blog-view-model.dto';
 import { PostInputDto } from '../src/modules/blogs-platform/posts/api/dto/input/create-post-input.dto';
 import { PostViewDto } from '../src/modules/blogs-platform/posts/api/dto/view/post-view.dto';
+import { UserInputDto } from '../src/modules/users-accounts/users/api/dto/input/create-user-input.dto';
+import { randomUUID } from 'crypto';
+import { addHours } from 'date-fns';
 
-// type UserOverridesType = {
-//   accountData?: {
-//     login?: string;
-//     email?: string;
-//     passwordHash?: string;
-//   };
-//   emailConfirmation?: {
-//     confirmationCode?: string;
-//     expDate?: Date;
-//     isConfirmed?: boolean;
-//   };
-//   passwordRecovery?: {
-//     recoveryCode?: string | null;
-//     expDate?: Date;
-//   };
-// };
+type UserOverridesType = {
+  accountData?: {
+    login?: string;
+    email?: string;
+    passwordHash?: string;
+  };
+  emailConfirmation?: {
+    confirmationCode?: string;
+    expDate?: Date;
+    isConfirmed?: boolean;
+  };
+  passwordRecovery?: {
+    recoveryCode?: string | null;
+    expDate?: Date;
+  };
+};
 
 export class TestHelper {
   constructor(private req: TestAgent) {}
@@ -128,49 +131,50 @@ export class TestHelper {
     return res.body.id;
   }
 
-  // // USERS
-  // createUserInputDto(
-  //   login?: string,
-  //   email?: string,
-  //   password?: string,
-  // ): UserInputModel {
-  //   return {
-  //     login: login ?? 'user12',
-  //     email: email ?? 'user@gmail.com',
-  //     password: password ?? '1234567',
-  //   };
-  // }
+  // USERS
+  createUserInputDto(
+    login?: string,
+    email?: string,
+    password?: string,
+  ): UserInputDto {
+    return {
+      login: login ?? 'user12',
+      email: email ?? 'user@gmail.com',
+      password: password ?? '1234567',
+    };
+  }
 
-  // createDbUser(overrides: UserOverridesType = {}) {
-  //   return {
-  //     accountData: {
-  //       login: `user${Math.random().toFixed(3)}`,
-  //       email: `some-email${Math.random().toFixed(3)}@email.com`,
-  //       createdAt: new Date().toISOString(),
-  //       passwordHash: 'somepasshash',
-  //       ...overrides.accountData,
-  //     },
-  //     emailConfirmation: {
-  //       confirmationCode: randomUUID(),
-  //       expDate: addHours(new Date(), 2),
-  //       isConfirmed: false,
-  //       ...overrides.emailConfirmation,
-  //     },
-  //     passwordRecovery: {
-  //       recoveryCode: null,
-  //       expDate: new Date(),
-  //       ...overrides.passwordRecovery,
-  //     },
-  //   };
-  // }
+  createDbUser(overrides: UserOverridesType = {}) {
+    return {
+      accountData: {
+        login: `user${Math.random().toFixed(3)}`,
+        email: `some-email${Math.random().toFixed(3)}@email.com`,
+        createdAt: new Date().toISOString(),
+        passwordHash: 'somepasshash',
+        ...overrides.accountData,
+      },
+      emailConfirmation: {
+        confirmationCode: randomUUID(),
+        expDate: addHours(new Date(), 2),
+        isConfirmed: false,
+        ...overrides.emailConfirmation,
+      },
+      passwordRecovery: {
+        recoveryCode: null,
+        expDate: new Date(),
+        ...overrides.passwordRecovery,
+      },
+    };
+  }
 
-  // async createUserInDb(overrides: UserOverridesType = {}) {
-  //   const newUser = this.createDbUser(overrides);
+  async createUserInDb(overrides: UserOverridesType = {}): Promise<string> {
+    const newUser = this.createDbUser(overrides);
 
-  //   const user = await UserModel.insertOne(newUser);
+    //MOCK SERVICES
+    const user = await UserModel.insertOne(newUser);
 
-  //   return user.id;
-  // }
+    return user.id;
+  }
 
   // async countSessions(): Promise<number> {
   //   return SessionModel.countDocuments();
@@ -263,13 +267,13 @@ export class TestHelper {
     }
   }
 
-  // async createUsersInDb(amount: number) {
-  //   for (let i = 1; i <= amount; i++) {
-  //     await testHelper.createUserInDb({
-  //       accountData: { login: `user${i}`, email: `email${i}` },
-  //     });
-  //   }
-  // }
+  async createUsersInDb(amount: number) {
+    for (let i = 1; i <= amount; i++) {
+      await testHelper.createUserInDb({
+        accountData: { login: `user${i}`, email: `email${i}` },
+      });
+    }
+  }
 
   // async createCommentsInDb(amount: number, postId: string) {
   //   for (let i = 1; i <= amount; i++) {

@@ -33,7 +33,7 @@ export class UsersService {
 
     const user = await this.userFactory(dto, false);
 
-    // await this.usersRepository.save(user);
+    await this.usersRepository.save(user);
 
     this.emailService
       .sendRegistrationEmail(dto.email, user.emailConfirmation.confirmationCode)
