@@ -5,6 +5,9 @@ import { UpdateBlogDto } from '../application/dto/update-blog.dto';
 import { CreateBlogDto } from '../application/dto/create-blog.dto';
 
 import type { BlogModelType } from '../domain/blog.entity';
+import { DomainException } from '../../../core/exception-filters/exceptions/domain.exception';
+import { errorMessages } from '../../../core/constants/error-messages.constants';
+import { DomainExceptionCode } from '../../../core/exception-filters/exceptions/domain.exception-code';
 
 @Injectable()
 export class BlogsRepository {
@@ -16,7 +19,10 @@ export class BlogsRepository {
 
   async getBlogByIdOrFail(blogId: string): Promise<BlogDocument> {
     return this.BlogModel.findById(blogId).orFail(
-      new NotFoundException('Blog was not found'),
+      new DomainException(
+        errorMessages.BLOG_NOT_FOUND,
+        DomainExceptionCode.NOT_FOUND,
+      ),
     );
   }
 

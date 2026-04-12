@@ -68,7 +68,7 @@ export class BlogsController {
   @Post(':id/posts')
   @UseGuards(BasicAuthGuard)
   async createPostForBlog(
-    @Param(':id') blogId: string,
+    @Param('id', MongoIdValidationPipe) blogId: string,
     @Body() body: PostForBlogInputDto,
   ): Promise<PostViewDto> {
     const { content, shortDescription, title } = body;
@@ -101,7 +101,7 @@ export class BlogsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
   async updateBlog(
-    @Param(':id') id: string,
+    @Param('id', MongoIdValidationPipe) id: string,
     @Body() body: BlogInputDto,
   ): Promise<void> {
     await this.blogsService.updateBlog({
@@ -110,16 +110,14 @@ export class BlogsController {
       description: body.description,
       websiteUrl: body.websiteUrl,
     });
-
-    return;
   }
 
   @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBlog(@Param('id') id: string): Promise<void> {
+  async deleteBlog(
+    @Param('id', MongoIdValidationPipe) id: string,
+  ): Promise<void> {
     await this.blogsService.deleteBlog(id);
-
-    return;
   }
 }

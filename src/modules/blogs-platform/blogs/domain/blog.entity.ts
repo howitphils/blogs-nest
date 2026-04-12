@@ -2,7 +2,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
 import { CreateBlogDomainDto } from './dto/create-blog-domain.dto';
 import { UpdateBlogDomainDto } from './dto/update-blog-domain.dto';
-import { BadRequestException } from '@nestjs/common';
+import { DomainException } from '../../../core/exception-filters/exceptions/domain.exception';
+import { errorMessages } from '../../../core/constants/error-messages.constants';
+import { DomainExceptionCode } from '../../../core/exception-filters/exceptions/domain.exception-code';
 
 @Schema({ timestamps: true })
 export class Blog {
@@ -60,7 +62,10 @@ export class Blog {
 
   delete() {
     if (this.deletedAt !== null) {
-      throw new BadRequestException('Blog is already deleted');
+      throw new DomainException(
+        errorMessages.BLOG_DELETED,
+        DomainExceptionCode.NOT_FOUND,
+      );
     }
 
     this.deletedAt = new Date();
