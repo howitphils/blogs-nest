@@ -93,8 +93,8 @@ export class TestHelper {
   createPostInputDto(blogId: string, title?: string): PostInputDto {
     return {
       title: title || 'Test Post',
-      shortDescription: 'This is a test post short description',
-      content: 'This is the content of the test post',
+      shortDescription: 'description',
+      content: 'content',
       blogId: blogId,
     };
   }
@@ -127,10 +127,6 @@ export class TestHelper {
 
     return res.body.id;
   }
-
-  // async postsCount(): Promise<number> {
-  //   return PostModel.countDocuments();
-  // }
 
   // // USERS
   // createUserInputDto(
@@ -261,15 +257,9 @@ export class TestHelper {
     }
   }
 
-  // async createPostsInDb(amount: number) {
-  //   for (let i = 1; i <= amount; i++) {
-  //     await testHelper.createPostInDb(`post${i}`);
-  //   }
-  // }
-
-  async createPostsForBlogInDb(amount: number, blogId: string) {
+  async createPostsInDb(amount: number, blogId: string) {
     for (let i = 1; i <= amount; i++) {
-      await this.createPostInDb(blogId, `postForBlog${i}`);
+      await this.createPostInDb(blogId, `post${i}`);
     }
   }
 

@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { PostForBlogInputDto } from './../src/modules/blogs-platform/posts/api/dto/input/create-posts-for-blog-input.dto';
 import { BlogInputDto } from './../src/modules/blogs-platform/blogs/api/dto/input/create-blog-input.dto';
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { describe, it, expect, afterAll, beforeAll } from '@jest/globals';
 import { HttpStatus } from '@nestjs/common';
 import { ErrorResponse } from '../src/modules/core/types/error-response.types';
-import { defaultQueryParams } from '../src/modules/core/constants/query-params.constants';
+import { defaultPagination } from '../src/modules/core/constants/query-params.constants';
 import { req, testHelper } from './test.setup';
 import { createBlogInputRestrictions } from '../src/modules/blogs-platform/blogs/api/dto/input/restrictions/create-blog-input.restrictions';
 import { LikeStatuses } from '../src/modules/core/types/like-statuses.types';
@@ -28,11 +28,11 @@ describe('Blogs Api (e2e)', () => {
 
       expect(res.status).toBe(HttpStatus.OK);
 
-      expect(res.body.page).toBe(defaultQueryParams.pageNumber);
-      expect(res.body.pageSize).toBe(defaultQueryParams.pageSize);
+      expect(res.body.page).toBe(defaultPagination.pageNumber);
+      expect(res.body.pageSize).toBe(defaultPagination.pageSize);
       expect(res.body.pagesCount).toBe(2);
       expect(res.body.totalCount).toBe(15);
-      expect(res.body.items.length).toBe(defaultQueryParams.pageSize);
+      expect(res.body.items.length).toBe(defaultPagination.pageSize);
       expect(res.body.items[0]).toEqual({
         id: expect.any(String),
         name: 'blog15',
@@ -80,135 +80,134 @@ describe('Blogs Api (e2e)', () => {
     });
   });
 
-  // describe('GET* /blogs/:blogId/posts', () => {
-  //   let blogId: string;
+  describe('GET* /blogs/:blogId/posts', () => {
+    let blogId: string;
 
-  //   beforeAll(async () => {
-  //     blogId = await testHelper.createBlogInDb();
+    beforeAll(async () => {
+      blogId = await testHelper.createBlogInDb();
+      const blogId2 = await testHelper.createBlogInDb('blog2');
 
-  //     await Promise.all([
-  //       testHelper.createPostsInDb(10),
-  //       testHelper.createPostsForBlogInDb(5, blogId),
-  //     ]);
+      await Promise.all([
+        testHelper.createPostsInDb(5, blogId),
+        testHelper.createPostsInDb(10, blogId2),
+      ]);
+    });
 
-  //     expect(await testHelper.postsCount()).toBe(15);
-  //   });
+    afterAll(async () => {
+      await testHelper.clearDatabase();
+    });
 
-  //   afterAll(async () => {
-  //     await testHelper.clearDatabase();
-  //   });
+    // let postIdToLike: string;
+    it('should return posts with default pagination params', async () => {
+      const res = await req.get(`/blogs/${blogId}/posts`);
 
-  //   let postIdToLike: string;
-  //   it('should return posts with default pagination params', async () => {
-  //     const res = await req.get(`/blogs/${blogId}/posts`);
+      expect(res.status).toBe(HttpStatus.OK);
 
-  //     expect(res.status).toBe(HttpStatus.OK);
+      expect(res.body.page).toBe(defaultPagination.pageNumber);
+      expect(res.body.pageSize).toBe(defaultPagination.pageSize);
+      expect(res.body.pagesCount).toBe(1);
+      expect(res.body.totalCount).toBe(5);
+      expect(res.body.items.length).toBe(5);
+      expect(res.body.items[0]).toEqual({
+        id: expect.any(String),
+        blogId: blogId,
+        title: 'post5',
+        blogName: 'New Blog',
+        shortDescription: 'description',
+        content: 'content',
+        createdAt: expect.any(String),
+        extendedLikesInfo: {
+          likesCount: 0,
+          dislikesCount: 0,
+          myStatus: LikeStatuses.NONE,
+          newestLikes: [],
+        },
+      }); // Testing mapping + sorting direction(desc)
 
-  //     expect(res.body.page).toBe(appSettings.pagination.DEFAULT_PAGE_NUMBER);
-  //     expect(res.body.pageSize).toBe(appSettings.pagination.DEFAULT_PAGE_SIZE);
-  //     expect(res.body.pagesCount).toBe(1);
-  //     expect(res.body.totalCount).toBe(5);
-  //     expect(res.body.items.length).toBe(5);
-  //     expect(res.body.items[0]).toEqual({
-  //       id: expect.any(String),
-  //       blogId: blogId,
-  //       title: 'postForBlog5',
-  //       blogName: 'random-blog',
-  //       shortDescription: 'description',
-  //       content: 'content',
-  //       createdAt: expect.any(String),
-  //       extendedLikesInfo: {
-  //         likesCount: 0,
-  //         dislikesCount: 0,
-  //         myStatus: LikeStatuses.NONE,
-  //         newestLikes: [],
-  //       },
-  //     }); // Testing mapping + sorting direction(desc)
+      // postIdToLike = res.body.items[0].id;
+    });
 
-  //     postIdToLike = res.body.items[0].id;
-  //   });
+    // it('should return posts for blog for authorized user', async () => {
+    //   const tokenService = new TokenService();
 
-  //   it('should return posts for blog for authorized user', async () => {
-  //     const tokenService = new TokenService();
+    //   const userId = await testHelper.createUserInDb({
+    //     accountData: { login: 'user14' },
+    //   });
+    //   const token = tokenService.createAccessToken(userId);
+    //   await testHelper.updatePostLikeStatus(
+    //     postIdToLike,
+    //     token,
+    //     LikeStatuses.LIKE,
+    //   );
 
-  //     const userId = await testHelper.createUserInDb({
-  //       accountData: { login: 'user14' },
-  //     });
-  //     const token = tokenService.createAccessToken(userId);
-  //     await testHelper.updatePostLikeStatus(
-  //       postIdToLike,
-  //       token,
-  //       LikeStatuses.LIKE,
-  //     );
+    //   const res = await req
+    //     .get(`/blogs/${blogId}/posts`)
+    //     .set('Authorization', testHelper.getBearerAuthHeader(token));
 
-  //     const res = await req
-  //       .get(`/blogs/${blogId}/posts`)
-  //       .set('Authorization', testHelper.getBearerAuthHeader(token));
+    //   expect(res.status).toBe(HttpStatus.OK);
 
-  //     expect(res.status).toBe(HttpStatus.OK);
+    //   expect(res.body.page).toBe(appSettings.pagination.DEFAULT_PAGE_NUMBER);
+    //   expect(res.body.pageSize).toBe(appSettings.pagination.DEFAULT_PAGE_SIZE);
+    //   expect(res.body.pagesCount).toBe(1);
+    //   expect(res.body.totalCount).toBe(5);
+    //   expect(res.body.items.length).toBe(5);
+    //   expect(res.body.items[0].extendedLikesInfo).toEqual({
+    //     likesCount: 1,
+    //     dislikesCount: 0,
+    //     myStatus: LikeStatuses.LIKE,
+    //     newestLikes: [
+    //       {
+    //         addedAt: expect.any(String),
+    //         login: 'user14',
+    //         userId,
+    //       },
+    //     ],
+    //   });
+    // });
 
-  //     expect(res.body.page).toBe(appSettings.pagination.DEFAULT_PAGE_NUMBER);
-  //     expect(res.body.pageSize).toBe(appSettings.pagination.DEFAULT_PAGE_SIZE);
-  //     expect(res.body.pagesCount).toBe(1);
-  //     expect(res.body.totalCount).toBe(5);
-  //     expect(res.body.items.length).toBe(5);
-  //     expect(res.body.items[0].extendedLikesInfo).toEqual({
-  //       likesCount: 1,
-  //       dislikesCount: 0,
-  //       myStatus: LikeStatuses.LIKE,
-  //       newestLikes: [
-  //         {
-  //           addedAt: expect.any(String),
-  //           login: 'user14',
-  //           userId,
-  //         },
-  //       ],
-  //     });
-  //   });
+    it('should return posts with added query params', async () => {
+      const res = await req.get(
+        `/blogs/${blogId}/posts?pageSize=2&pageNumber=2&sortDirection=asc`,
+      );
 
-  //   it('should return posts with added query params', async () => {
-  //     const res = await req.get(
-  //       `/blogs/${blogId}/posts?pageSize=2&pageNumber=2&sortDirection=asc`,
-  //     );
+      expect(res.status).toBe(HttpStatus.OK);
+      expect(res.body.pagesCount).toBe(3);
+      expect(res.body.page).toBe(2);
+      expect(res.body.items.length).toBe(2);
+      expect(res.body.items[0]).toEqual({
+        id: expect.any(String),
+        blogId: blogId,
+        title: 'post3',
+        blogName: 'New Blog',
+        shortDescription: 'description',
+        content: 'content',
+        createdAt: expect.any(String),
+        extendedLikesInfo: {
+          likesCount: 0,
+          dislikesCount: 0,
+          myStatus: LikeStatuses.NONE,
+          newestLikes: [],
+        },
+      }); // Testing mapping + sorting direction(asc)
+    });
 
-  //     expect(res.status).toBe(HttpStatus.OK);
-  //     expect(res.body.pagesCount).toBe(3);
-  //     expect(res.body.page).toBe(2);
-  //     expect(res.body.items.length).toBe(2);
-  //     expect(res.body.items[0]).toEqual({
-  //       id: expect.any(String),
-  //       blogId: blogId,
-  //       title: 'postForBlog3',
-  //       blogName: 'random-blog',
-  //       shortDescription: 'description',
-  //       content: 'content',
-  //       createdAt: expect.any(String),
-  //       extendedLikesInfo: {
-  //         likesCount: 0,
-  //         dislikesCount: 0,
-  //         myStatus: LikeStatuses.NONE,
-  //         newestLikes: [],
-  //       },
-  //     }); // Testing mapping + sorting direction(asc)
-  //   });
+    it('should return 404 for non-existing blog', async () => {
+      const incorrectId = testHelper.makeIncorrectId();
 
-  //   it('should return 404 for non-existing blog', async () => {
-  //     const incorrectId = testHelper.makeIncorrectId();
+      const res = await req.get(`/blogs/${incorrectId}/posts`);
 
-  //     const res = await req.get(`/blogs/${incorrectId}/posts`);
+      expect(res.status).toBe(HttpStatus.NOT_FOUND);
+      expect(res.body).toHaveProperty('message');
+    });
 
-  //     expect(res.status).toBe(HttpStatus.NOT_FOUND);
-  //     expect(res.body).toHaveProperty('message');
-  //   });
+    it('should return 400 for invalid id type', async () => {
+      const res = await req.get('/blogs/abc/posts');
 
-  //   it('should return 400 for invalid id type', async () => {
-  //     const res = await req.get('/blogs/abc/posts');
-
-  //     expect(res.status).toBe(HttpStatus.BAD_REQUEST);
-  //     expect(res.body).toHaveProperty('errorsMessages');
-  //     expect(res.body.errorsMessages[0].field).toBe('id');
-  //   });
-  // });
+      expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+      expect(res.body).toHaveProperty('errorsMessages');
+      expect(res.body.errorsMessages[0].field).toBe('id');
+    });
+  });
 
   describe('GET** /blogs/:id', () => {
     let blogId: string;
@@ -447,7 +446,7 @@ describe('Blogs Api (e2e)', () => {
 
       updatedBlog = testHelper.createUpdatedBlogInputDto();
 
-      await testHelper.createPostsForBlogInDb(3, blogId); // To check updating blogName property of post
+      await testHelper.createPostsInDb(3, blogId); // To check updating blogName property of post
     });
 
     afterAll(async () => {

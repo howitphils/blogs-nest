@@ -57,7 +57,7 @@ export class BlogsController {
 
   @Get(':id/posts')
   async getPostsForBlog(
-    @Param(':id') blogId: string,
+    @Param('id', MongoIdValidationPipe) blogId: string,
     @Query() query: BaseQueryParams,
   ): Promise<PaginationViewDto<PostViewDto>> {
     const posts = await this.postsQueryRepository.getPosts(query, blogId);

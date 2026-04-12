@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { defaultQueryParams } from '../constants/query-params.constants';
+import { defaultPagination } from '../constants/query-params.constants';
 
 export enum SortDirections {
   ASC = 'asc',
@@ -12,10 +12,10 @@ export enum SortByOptions {
 
 export class BaseQueryParams {
   @Type(() => Number)
-  pageNumber: number = defaultQueryParams.pageNumber;
+  pageNumber: number = defaultPagination.pageNumber;
 
   @Type(() => Number)
-  pageSize: number = defaultQueryParams.pageSize;
+  pageSize: number = defaultPagination.pageSize;
 
   sortBy: SortByOptions = SortByOptions.CREATED_AT;
   sortDirection: SortDirections = SortDirections.DESC;

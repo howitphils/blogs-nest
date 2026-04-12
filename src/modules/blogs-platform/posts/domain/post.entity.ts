@@ -39,7 +39,7 @@ export class Post {
   @Prop({ type: String, required: true, trim: true, minlength: 1 })
   content: string;
 
-  @Prop({ type: Date, required: true, nullable: true, default: null })
+  @Prop({ type: Date, nullable: true, default: null })
   deletedAt: Date | null;
 
   @Prop({ type: String, required: true })

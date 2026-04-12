@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ROUTES } from '../../../core/constants/routes.constants';
 import { BaseQueryParams } from '../../../core/dto/base-query-params.dto';
@@ -19,6 +20,7 @@ import { PostsQueryRepository } from '../repository/posts-query-repository';
 import { PaginationViewDto } from '../../../core/dto/pagination.dto';
 import { PostViewDto } from './dto/view/post-view.dto';
 import { CommentViewDto } from '../../comments/api/view/comment-view.dto';
+import { BasicAuthGuard } from '../../../core/guards/basic-auth.guard';
 
 @Injectable()
 @Controller(ROUTES.MAIN.posts)
@@ -59,6 +61,7 @@ export class PostsController {
   }
 
   @Post()
+  @UseGuards(BasicAuthGuard)
   async createPost(@Body() body: PostInputDto): Promise<PostViewDto> {
     const { blogId, content, shortDescription, title } = body;
     const postId = await this.postsService.createPost({
@@ -75,7 +78,7 @@ export class PostsController {
 
   @Put(':id')
   async updatePost(
-    @Param(':id') postId: string,
+    @Param('id') postId: string,
     @Body() body: UpdatePostInputDto,
   ): Promise<void> {
     const { blogId, content, shortDescription, title } = body;
