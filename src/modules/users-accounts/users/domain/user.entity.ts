@@ -52,7 +52,7 @@ export class User {
     if (this.accountData.deletedAt !== null) {
       throw new DomainException(
         errorMessages.USER_DELETED,
-        DomainExceptionCode.BAD_REQUEST,
+        DomainExceptionCode.NOT_FOUND,
       );
     }
 

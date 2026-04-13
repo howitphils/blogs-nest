@@ -2,6 +2,9 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { HttpStatus } from '@nestjs/common';
 import { testHelper, req } from './test.setup';
+import { defaultPagination } from '../src/modules/core/constants/query-params.constants';
+import { UserInputDto } from '../src/modules/users-accounts/users/api/dto/input/create-user-input.dto';
+import { createUserInputRestrictions } from '../src/modules/users-accounts/users/api/dto/input/restrictions/create-user-input.restrictions';
 
 describe('Users API', () => {
   describe('GET /users', () => {
@@ -19,13 +22,11 @@ describe('Users API', () => {
         .set('Authorization', testHelper.getBasicAuthHeader());
 
       expect(res.status).toBe(HttpStatus.OK);
-      expect(res.body.page).toBe(appSettings.pagination.DEFAULT_PAGE_NUMBER);
-      expect(res.body.pageSize).toBe(appSettings.pagination.DEFAULT_PAGE_SIZE);
+      expect(res.body.page).toBe(defaultPagination.pageNumber);
+      expect(res.body.pageSize).toBe(defaultPagination.pageSize);
       expect(res.body.pagesCount).toBe(2);
       expect(res.body.totalCount).toBe(15);
-      expect(res.body.items.length).toBe(
-        appSettings.pagination.DEFAULT_PAGE_SIZE,
-      );
+      expect(res.body.items.length).toBe(defaultPagination.pageSize);
     });
 
     it('should return users with added query params', async () => {
@@ -57,13 +58,13 @@ describe('Users API', () => {
       expect(res.body.items[0]).toEqual({
         id: expect.any(String),
         login: 'user15',
-        email: 'email15',
+        email: 'email15@gmail.com',
         createdAt: expect.any(String),
       });
       expect(res.body.items[1]).toEqual({
         id: expect.any(String),
         login: 'user12',
-        email: 'email12',
+        email: 'email12@gmail.com',
         createdAt: expect.any(String),
       });
     });
@@ -80,7 +81,7 @@ describe('Users API', () => {
       expect(res.body.items[0]).toEqual({
         id: expect.any(String),
         login: 'user15',
-        email: 'email15',
+        email: 'email15@gmail.com',
         createdAt: expect.any(String),
       });
     });
@@ -97,7 +98,7 @@ describe('Users API', () => {
       expect(res.body.items[0]).toEqual({
         id: expect.any(String),
         login: 'user13',
-        email: 'email13',
+        email: 'email13@gmail.com',
         createdAt: expect.any(String),
       });
     });
@@ -159,7 +160,11 @@ describe('Users API', () => {
   });
 
   describe('POST /users', () => {
-    const userInputDto = testHelper.createUserInputDto();
+    let userInputDto: UserInputDto;
+
+    beforeAll(() => {
+      userInputDto = testHelper.createUserInputDto();
+    });
 
     afterAll(async () => {
       await testHelper.clearDatabase();
@@ -181,16 +186,20 @@ describe('Users API', () => {
     });
 
     it('should return 400 for invalid user data', async () => {
-      const invalidUserMinValues: UserInputModel = {
-        login: 'a'.repeat(userInputRestrictions.login.minLength - 1),
+      const invalidUserMinValues: UserInputDto = {
+        login: 'a'.repeat(createUserInputRestrictions.login.minLength - 1),
         email: '',
-        password: 'a'.repeat(userInputRestrictions.password.minLength - 1),
+        password: 'a'.repeat(
+          createUserInputRestrictions.password.minLength - 1,
+        ),
       };
 
-      const invalidUserMaxValues: UserInputModel = {
-        login: 'a'.repeat(userInputRestrictions.login.maxLength + 1),
-        email: 'a'.repeat(userInputRestrictions.email.maxLength + 1),
-        password: 'a'.repeat(userInputRestrictions.password.maxLength + 1),
+      const invalidUserMaxValues: UserInputDto = {
+        login: 'a'.repeat(createUserInputRestrictions.login.maxLength + 1),
+        email: '    ',
+        password: 'a'.repeat(
+          createUserInputRestrictions.password.maxLength + 1,
+        ),
       };
 
       const invalidFormatValues = {
@@ -221,16 +230,16 @@ describe('Users API', () => {
     });
 
     it('should return 400 for not unique user', async () => {
-      const sameLoginDto: UserInputModel = {
+      const sameLoginDto: UserInputDto = {
         login: userInputDto.login,
         email: 'different@gmail.com',
-        password: 'a'.repeat(userInputRestrictions.password.minLength),
+        password: 'a'.repeat(createUserInputRestrictions.password.minLength),
       };
 
-      const sameEmailDto: UserInputModel = {
+      const sameEmailDto: UserInputDto = {
         login: 'newlogin',
         email: userInputDto.email,
-        password: 'a'.repeat(userInputRestrictions.password.minLength),
+        password: 'a'.repeat(createUserInputRestrictions.password.minLength),
       };
 
       const resArr = await Promise.all([

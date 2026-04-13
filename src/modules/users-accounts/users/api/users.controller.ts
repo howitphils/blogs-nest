@@ -19,6 +19,7 @@ import { PaginationViewDto } from '../../../core/dto/pagination.dto';
 import { UserViewDto } from './dto/view/user-view.dto';
 import { UserInputDto } from './dto/input/create-user-input.dto';
 import { BasicAuthGuard } from '../../../core/guards/basic-auth.guard';
+import { MongoIdValidationPipe } from '../../../core/pipes/MongoIdValidation.pipe';
 
 @Injectable()
 @UseGuards(BasicAuthGuard)
@@ -51,7 +52,7 @@ export class UsersController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteUser(@Param(':id') id: string) {
+  async deleteUser(@Param('id', MongoIdValidationPipe) id: string) {
     await this.usersService.deleteUser(id);
   }
 }

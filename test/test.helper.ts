@@ -1,32 +1,30 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { PostForBlogInputDto } from './../src/modules/blogs-platform/posts/api/dto/input/create-posts-for-blog-input.dto';
 import { ObjectId } from 'mongodb';
 import { HttpStatus } from '@nestjs/common';
 import { BlogInputDto } from '../src/modules/blogs-platform/blogs/api/dto/input/create-blog-input.dto';
 import TestAgent from 'supertest/lib/agent';
-import { BlogViewDto } from '../src/modules/blogs-platform/blogs/api/dto/view/blog-view-model.dto';
 import { PostInputDto } from '../src/modules/blogs-platform/posts/api/dto/input/create-post-input.dto';
-import { PostViewDto } from '../src/modules/blogs-platform/posts/api/dto/view/post-view.dto';
 import { UserInputDto } from '../src/modules/users-accounts/users/api/dto/input/create-user-input.dto';
-import { randomUUID } from 'crypto';
-import { addHours } from 'date-fns';
 
-type UserOverridesType = {
-  accountData?: {
-    login?: string;
-    email?: string;
-    passwordHash?: string;
-  };
-  emailConfirmation?: {
-    confirmationCode?: string;
-    expDate?: Date;
-    isConfirmed?: boolean;
-  };
-  passwordRecovery?: {
-    recoveryCode?: string | null;
-    expDate?: Date;
-  };
-};
+// type UserOverridesType = {
+//   accountData?: {
+//     login?: string;
+//     email?: string;
+//     passwordHash?: string;
+//   };
+//   emailConfirmation?: {
+//     confirmationCode?: string;
+//     expDate?: Date;
+//     isConfirmed?: boolean;
+//   };
+//   passwordRecovery?: {
+//     recoveryCode?: string | null;
+//     expDate?: Date;
+//   };
+// };
 
 export class TestHelper {
   constructor(private req: TestAgent) {}
@@ -75,11 +73,7 @@ export class TestHelper {
 
   async createBlogInDb(name?: string): Promise<string> {
     const blogInputDto = this.createBlogInputDto(name);
-    const res = (await this.req
-      .post('/blogs')
-      .set('Authorization', this.getBasicAuthHeader())
-      .send(blogInputDto)
-      .expect(HttpStatus.CREATED)) as { body: BlogViewDto };
+    const res = await this.makePostRequest('/blogs', blogInputDto);
 
     return res.body.id;
   }
@@ -122,11 +116,7 @@ export class TestHelper {
   async createPostInDb(blogId: string, title?: string): Promise<string> {
     const postInputDto = this.createPostInputDto(blogId, title);
 
-    const res = (await this.req
-      .post('/posts')
-      .set('Authorization', this.getBasicAuthHeader())
-      .send(postInputDto)
-      .expect(HttpStatus.CREATED)) as { body: PostViewDto };
+    const res = await this.makePostRequest('/posts', postInputDto);
 
     return res.body.id;
   }
@@ -144,36 +134,39 @@ export class TestHelper {
     };
   }
 
-  createDbUser(overrides: UserOverridesType = {}) {
-    return {
-      accountData: {
-        login: `user${Math.random().toFixed(3)}`,
-        email: `some-email${Math.random().toFixed(3)}@email.com`,
-        createdAt: new Date().toISOString(),
-        passwordHash: 'somepasshash',
-        ...overrides.accountData,
-      },
-      emailConfirmation: {
-        confirmationCode: randomUUID(),
-        expDate: addHours(new Date(), 2),
-        isConfirmed: false,
-        ...overrides.emailConfirmation,
-      },
-      passwordRecovery: {
-        recoveryCode: null,
-        expDate: new Date(),
-        ...overrides.passwordRecovery,
-      },
-    };
-  }
+  // createDbUser(overrides: UserOverridesType = {}) {
+  //   return {
+  //     accountData: {
+  //       login: `user${Math.random().toFixed(3)}`,
+  //       email: `some-email${Math.random().toFixed(3)}@email.com`,
+  //       createdAt: new Date().toISOString(),
+  //       passwordHash: 'somepasshash',
+  //       ...overrides.accountData,
+  //     },
+  //     emailConfirmation: {
+  //       confirmationCode: randomUUID(),
+  //       expDate: addHours(new Date(), 2),
+  //       isConfirmed: false,
+  //       ...overrides.emailConfirmation,
+  //     },
+  //     passwordRecovery: {
+  //       recoveryCode: null,
+  //       expDate: new Date(),
+  //       ...overrides.passwordRecovery,
+  //     },
+  //   };
+  // }
 
-  async createUserInDb(overrides: UserOverridesType = {}): Promise<string> {
-    const newUser = this.createDbUser(overrides);
+  async createUserInDb(
+    login?: string,
+    email?: string,
+    password?: string,
+  ): Promise<string> {
+    const newUserDto = this.createUserInputDto(login, email, password);
 
-    //MOCK SERVICES
-    const user = await UserModel.insertOne(newUser);
+    const res = await this.makePostRequest('/users', newUserDto);
 
-    return user.id;
+    return res.body.id;
   }
 
   // async countSessions(): Promise<number> {
@@ -269,9 +262,7 @@ export class TestHelper {
 
   async createUsersInDb(amount: number) {
     for (let i = 1; i <= amount; i++) {
-      await testHelper.createUserInDb({
-        accountData: { login: `user${i}`, email: `email${i}` },
-      });
+      await this.createUserInDb(`user${i}`, `email${i}@gmail.com`);
     }
   }
 
