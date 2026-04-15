@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
@@ -8,6 +9,8 @@ import { BlogInputDto } from '../src/modules/blogs-platform/blogs/api/dto/input/
 import TestAgent from 'supertest/lib/agent';
 import { PostInputDto } from '../src/modules/blogs-platform/posts/api/dto/input/create-post-input.dto';
 import { UserInputDto } from '../src/modules/users-accounts/users/api/dto/input/create-user-input.dto';
+import { LoginInputDto } from '../src/modules/users-accounts/users/api/dto/input/login-user-input.dto';
+import { ThrottlerStorageOptions } from '@nestjs/throttler/dist/throttler-storage-options.interface';
 
 // type UserOverridesType = {
 //   accountData?: {
@@ -27,15 +30,21 @@ import { UserInputDto } from '../src/modules/users-accounts/users/api/dto/input/
 // };
 
 export class TestHelper {
-  constructor(private req: TestAgent) {}
+  constructor(
+    private req: TestAgent,
+    private throttlerStorage: Map<string, ThrottlerStorageOptions>,
+  ) {}
 
   async clearDatabase() {
     await this.req.delete('/testing/all-data').expect(HttpStatus.NO_CONTENT);
   }
 
-  // async clearRedis() {
-  //   await redisClient.flushDb();
-  // },
+  clearRedis() {
+    // await redisClient.flushDb();
+    console.log(this.throttlerStorage);
+
+    this.throttlerStorage.clear();
+  }
 
   makeIncorrectId() {
     return new ObjectId().toString();
@@ -205,13 +214,13 @@ export class TestHelper {
   //   return CommentModel.countDocuments();
   // }
 
-  // // LOGIN
-  // createLoginInputDto(loginOrEmail: any, password?: any) {
-  //   return {
-  //     loginOrEmail,
-  //     password: password ?? '1234567',
-  //   };
-  // }
+  // LOGIN
+  createLoginInputDto(loginOrEmail: any, password?: any) {
+    return {
+      loginOrEmail,
+      password: password ?? '1234567',
+    };
+  }
 
   // createLoginInfoDto(loginOrEmail: string): LoginInfo {
   //   return {
@@ -222,20 +231,23 @@ export class TestHelper {
   //   };
   // }
 
-  // async loginUser(dto: this.LoginInputModel) {
-  //   const res = await req.post('/auth/login').send(dto).expect(HttpStatus.OK);
+  async loginUser(dto: LoginInputDto) {
+    const res = await this.req
+      .post('/auth/login')
+      .send(dto)
+      .expect(HttpStatus.OK);
 
-  //   return {
-  //     accessToken: res.body.accessToken,
-  //     cookie: res.headers['set-cookie'][0],
-  //   };
-  // }
+    return {
+      accessToken: res.body.accessToken,
+      // cookie: res.headers['set-cookie'][0],
+    };
+  }
 
-  // async loginUserFromDevices(amount: number, dto: LoginInputModel) {
+  // async loginUserFromDevices(amount: number, dto: LoginInputDto) {
   //   const cookiesArr: string[] = [];
 
   //   for (let i = 1; i <= amount; i++) {
-  //     const this.res = await req
+  //     const res = await this.req
   //       .post('/auth/login')
   //       .set('user-agent', `device${i}`)
   //       .send(dto)

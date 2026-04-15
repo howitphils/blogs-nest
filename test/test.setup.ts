@@ -7,6 +7,7 @@ import { AppModule } from '../src/app.module';
 import { TestHelper } from './test.helper';
 import { App } from 'supertest/types';
 import { setupApp } from '../src/setup/app.setup';
+import { ThrottlerStorageService } from '@nestjs/throttler';
 
 export let app: INestApplication<App>;
 export let req: TestAgent;
@@ -21,10 +22,12 @@ beforeAll(async () => {
 
   setupApp(app);
 
-  req = request(app.getHttpServer());
-  testHelper = new TestHelper(req);
-
   await app.init();
+
+  const throttlerStorage = app.get(ThrottlerStorageService).storage;
+
+  req = request(app.getHttpServer());
+  testHelper = new TestHelper(req, throttlerStorage);
 });
 
 afterAll(async () => {

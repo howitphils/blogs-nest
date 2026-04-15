@@ -57,6 +57,7 @@ export class AuthController {
   }
 
   @Post(ROUTES.SUB.login)
+  @HttpCode(HttpStatus.OK)
   @SkipThrottle()
   async loginUser(
     @Body() body: LoginInputDto,

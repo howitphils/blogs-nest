@@ -12,22 +12,36 @@ import { UsersExternalRepository } from './users/repository/users-external.repos
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './users/api/auth.controller';
 import { AuthService } from './users/application/auth.service';
-import { ThrottlerModule } from '@nestjs/throttler';
+import {
+  seconds,
+  ThrottlerModule,
+  ThrottlerStorageService,
+} from '@nestjs/throttler';
 import { AccessJwtStrategy } from '../core/guards/strategies/access-jwt.strategy';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EmailService } from '../core/services/email-service/email.service';
+import { RedisModule, RedisToken } from '@nestjs-redis/client';
+import { RedisThrottlerStorage } from '@nestjs-redis/throttler-storage';
+import { RedisClientType } from 'redis';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     JwtModule, // TODO: update when config service will be added (register async)
-    ThrottlerModule.forRoot({
-      throttlers: [
-        {
-          ttl: 10000, // TODO: .env
-          limit: 3,
-        },
+    ThrottlerModule.forRootAsync({
+      imports: [
+        RedisModule.forRoot({ options: { url: 'redis://localhost:6379' } }),
       ],
+      inject: [RedisToken()],
+      useFactory: (redis: RedisClientType) => ({
+        throttlers: [
+          {
+            ttl: seconds(10), // TODO: .env
+            limit: 5,
+          },
+        ],
+        storage: new RedisThrottlerStorage(redis),
+      }),
     }),
     MailerModule.forRoot({
       transport: {
@@ -50,6 +64,7 @@ import { EmailService } from '../core/services/email-service/email.service';
     UsersRepository,
     UsersQueryRepository,
     UsersExternalRepository,
+    ThrottlerStorageService,
   ],
   exports: [UsersExternalRepository, TokenService],
 })

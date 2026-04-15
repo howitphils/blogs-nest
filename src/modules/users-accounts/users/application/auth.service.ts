@@ -40,7 +40,7 @@ export class AuthService {
 
     if (!isVerified) {
       throw new DomainException(
-        errorMessages.INVALID_CREDENTIALS,
+        errorMessages.USER_NOT_VERIFIED,
         DomainExceptionCode.UNAUTHORIZED,
       );
     }
