@@ -13,7 +13,6 @@ import { setupApp } from '../src/setup/app.setup';
 import { ThrottlerStorage } from '@nestjs/throttler';
 import { EmailService } from '../src/modules/core/services/email-service/email.service';
 import { EmailServiceMock } from './mocks/email-service.mock';
-import { ModuleRef } from '@nestjs/core';
 
 export let app: INestApplication<App>;
 export let req: TestAgent;
@@ -33,10 +32,7 @@ beforeAll(async () => {
 
   await app.init();
 
-  const throttlerStorage = app
-    .get(ModuleRef)
-    .get(ThrottlerStorage, { strict: false });
-
+  const throttlerStorage = app.get(ThrottlerStorage);
   const redisClient = throttlerStorage.client as RedisClientType;
 
   req = request(app.getHttpServer());
