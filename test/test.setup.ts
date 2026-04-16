@@ -8,6 +8,8 @@ import { TestHelper } from './test.helper';
 import { App } from 'supertest/types';
 import { setupApp } from '../src/setup/app.setup';
 import { ThrottlerStorageService } from '@nestjs/throttler';
+import { EmailService } from '../src/modules/core/services/email-service/email.service';
+import { EmailServiceMock } from './mocks/email-service.mock';
 
 export let app: INestApplication<App>;
 export let req: TestAgent;
@@ -16,7 +18,10 @@ export let testHelper: TestHelper;
 beforeAll(async () => {
   const moduleFixture: TestingModule = await Test.createTestingModule({
     imports: [AppModule],
-  }).compile();
+  })
+    .overrideProvider(EmailService)
+    .useClass(EmailServiceMock)
+    .compile();
 
   app = moduleFixture.createNestApplication();
 

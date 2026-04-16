@@ -178,6 +178,18 @@ export class TestHelper {
     return res.body.id;
   }
 
+  async registerUser(
+    login?: string,
+    email?: string,
+    password?: string,
+  ): Promise<string> {
+    const newUserDto = this.createUserInputDto(login, email, password);
+
+    const res = await this.makePostRequest('/auth/registration', newUserDto);
+
+    return res.body.id;
+  }
+
   // async countSessions(): Promise<number> {
   //   return SessionModel.countDocuments();
   // }

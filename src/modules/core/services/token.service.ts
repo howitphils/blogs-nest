@@ -87,7 +87,7 @@ export class TokenService {
     return this.jwtService.decode(token);
   }
 
-  createRandomCode() {
+  createRandomCode(): string {
     return randomUUID();
   }
 }

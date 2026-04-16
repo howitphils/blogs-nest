@@ -7,6 +7,7 @@ import {
   expect,
   afterAll,
   afterEach,
+  jest,
 } from '@jest/globals';
 import { HttpStatus } from '@nestjs/common';
 import { DateService } from '../src/modules/core/services/date.service';
@@ -21,10 +22,16 @@ import { createUserInputRestrictions } from '../src/modules/users-accounts/users
 describe('AUTH API E2E', () => {
   let tokenService: TokenService;
   let dateService: DateService;
+  let createCodeMock: jest.SpiedFunction<() => string>;
+  let addDateMock: jest.SpiedFunction<(hours: number) => Date>;
 
   beforeAll(() => {
     tokenService = app.get(TokenService);
     dateService = app.get(DateService);
+
+    createCodeMock = jest.spyOn(tokenService, 'createRandomCode');
+
+    addDateMock = jest.spyOn(dateService, 'addHours');
   });
 
   describe('POST /login', () => {
@@ -435,21 +442,20 @@ describe('AUTH API E2E', () => {
 
     afterAll(async () => {
       await testHelper.clearDatabase();
+      jest.resetAllMocks();
     });
 
     it('should successfuly update password', async () => {
-      const recoveryCode = tokenService.createRandomCode();
+      const email = 'email@email.com';
+      const code = '1234';
+      createCodeMock.mockReturnValue(code);
 
-      await testHelper.createUserInDb({
-        passwordRecovery: {
-          recoveryCode,
-          expDate: dateService.addHours(2),
-        },
-      });
+      await testHelper.createUserInDb('user1', email);
+      await req.post('/auth/password-recovery').send({ email }); // TO UPDATE RECOVERY CODE
 
-      const newPasswordBody: NewPasswordBody = {
+      const newPasswordBody = {
         newPassword: 'newPassword1',
-        recoveryCode,
+        recoveryCode: code,
       };
 
       const res = await req.post('/auth/new-password').send(newPasswordBody);
@@ -470,18 +476,18 @@ describe('AUTH API E2E', () => {
     });
 
     it('should return 400 for expired recovery code', async () => {
-      const recoveryCode = tokenService.createRandomCode();
+      const email = 'email2@email.com';
+      const code = '12345';
 
-      await testHelper.createUserInDb({
-        passwordRecovery: {
-          recoveryCode,
-          expDate: dateService.addHours(-2),
-        },
-      });
+      addDateMock.mockReturnValue(new Date());
+      createCodeMock.mockReturnValue(code);
+
+      await testHelper.createUserInDb('user2', email);
+      await req.post('/auth/password-recovery').send({ email }); // TO UPDATE RECOVERY CODE AND DATE
 
       const newPasswordBody = {
         newPassword: 'newPassword1',
-        recoveryCode,
+        recoveryCode: code,
       };
 
       const res = await req.post('/auth/new-password').send(newPasswordBody);
@@ -576,10 +582,11 @@ describe('AUTH API E2E', () => {
   });
 
   describe('POST /email-confirmation', () => {
+    const code = '1234';
+
     beforeAll(async () => {
-      await testHelper.createUserInDb({
-        emailConfirmation: { confirmationCode: 'code' },
-      });
+      createCodeMock.mockReturnValue(code);
+      await testHelper.registerUser();
     });
 
     // afterEach(async () => {
@@ -588,12 +595,13 @@ describe('AUTH API E2E', () => {
 
     afterAll(async () => {
       await testHelper.clearDatabase();
+      jest.resetAllMocks();
     });
 
     it('should successfuly confirm email', async () => {
       const res = await req
         .post('/auth/registration-confirmation')
-        .send({ code: 'code' });
+        .send({ code });
 
       expect(res.status).toBe(HttpStatus.NO_CONTENT);
     });
@@ -601,26 +609,24 @@ describe('AUTH API E2E', () => {
     it('should return 400 if email is already confirmed', async () => {
       const res = await req
         .post('/auth/registration-confirmation')
-        .send({ code: 'code' });
+        .send({ code });
 
       expect(res.status).toBe(HttpStatus.BAD_REQUEST);
-      expect(res.body.message).toBe('Email is already confirmed');
+      expect(res.body.message).toBe(errorMessages.EMAIL_CONFIRMED);
     });
 
     it('should return 400 for expired confirmation code', async () => {
-      await testHelper.createUserInDb({
-        emailConfirmation: {
-          confirmationCode: 'expiredCode',
-          expDate: dateService.addHours(-2),
-        },
-      });
+      addDateMock.mockReturnValue(new Date());
+      createCodeMock.mockReturnValue('expired');
+
+      await testHelper.registerUser('user2', 'email2@email.com');
 
       const res = await req
         .post('/auth/registration-confirmation')
-        .send({ code: 'expiredCode' });
+        .send({ code: 'expired' });
 
       expect(res.status).toBe(HttpStatus.BAD_REQUEST);
-      expect(res.body.message).toBe('Confirmation code is already expired');
+      expect(res.body.message).toBe(errorMessages.CONFIRMATION_CODE_EXPIRED);
     });
 
     it('should return 404 for not existing confirmation code', async () => {
@@ -629,7 +635,7 @@ describe('AUTH API E2E', () => {
         .send({ code: 'invalidCode' });
 
       expect(res.status).toBe(HttpStatus.NOT_FOUND);
-      expect(res.body.message).toBe('User was not found');
+      expect(res.body.message).toBe(errorMessages.USER_NOT_FOUND);
     });
 
     it('should return 400 for invalid confirmation code', async () => {
