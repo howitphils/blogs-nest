@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { RedisClientType } from 'redis';
 import { beforeAll, afterAll } from '@jest/globals';
 import { INestApplication } from '@nestjs/common';
 import { TestingModule, Test } from '@nestjs/testing';
@@ -7,9 +10,10 @@ import { AppModule } from '../src/app.module';
 import { TestHelper } from './test.helper';
 import { App } from 'supertest/types';
 import { setupApp } from '../src/setup/app.setup';
-import { ThrottlerStorageService } from '@nestjs/throttler';
+import { ThrottlerStorage } from '@nestjs/throttler';
 import { EmailService } from '../src/modules/core/services/email-service/email.service';
 import { EmailServiceMock } from './mocks/email-service.mock';
+import { ModuleRef } from '@nestjs/core';
 
 export let app: INestApplication<App>;
 export let req: TestAgent;
@@ -29,10 +33,14 @@ beforeAll(async () => {
 
   await app.init();
 
-  const throttlerStorage = app.get(ThrottlerStorageService).storage;
+  const throttlerStorage = app
+    .get(ModuleRef)
+    .get(ThrottlerStorage, { strict: false });
+
+  const redisClient = throttlerStorage.client as RedisClientType;
 
   req = request(app.getHttpServer());
-  testHelper = new TestHelper(req, throttlerStorage);
+  testHelper = new TestHelper(req, redisClient);
 });
 
 afterAll(async () => {

@@ -11,27 +11,21 @@ import {
 } from '@jest/globals';
 import { HttpStatus } from '@nestjs/common';
 import { DateService } from '../src/modules/core/services/date.service';
-import { PasswordService } from '../src/modules/core/services/password.service';
 import { TokenService } from '../src/modules/core/services/token.service';
-import { testHelper, req, app } from './test.setup';
+import { testHelper, req } from './test.setup';
 import { LoginInputDto } from '../src/modules/users-accounts/users/api/dto/input/login-user-input.dto';
 import { UserInputDto } from '../src/modules/users-accounts/users/api/dto/input/create-user-input.dto';
 import { errorMessages } from '../src/modules/core/constants/error-messages.constants';
 import { createUserInputRestrictions } from '../src/modules/users-accounts/users/api/dto/input/restrictions/create-user-input.restrictions';
+import { addHours } from 'date-fns';
 
 describe('AUTH API E2E', () => {
-  let tokenService: TokenService;
-  let dateService: DateService;
   let createCodeMock: jest.SpiedFunction<() => string>;
   let addDateMock: jest.SpiedFunction<(hours: number) => Date>;
 
   beforeAll(() => {
-    tokenService = app.get(TokenService);
-    dateService = app.get(DateService);
-
-    createCodeMock = jest.spyOn(tokenService, 'createRandomCode');
-
-    addDateMock = jest.spyOn(dateService, 'addHours');
+    createCodeMock = jest.spyOn(TokenService.prototype, 'createRandomCode');
+    addDateMock = jest.spyOn(DateService.prototype, 'addHours');
   });
 
   describe('POST /login', () => {
@@ -42,9 +36,9 @@ describe('AUTH API E2E', () => {
       await testHelper.createUserInDb(userInputDto.login, userInputDto.email);
     });
 
-    // afterEach(async () => {
-    //   await testHelper.clearRedis();
-    // });
+    afterEach(async () => {
+      await testHelper.clearRedis();
+    });
 
     afterAll(async () => {
       await testHelper.clearDatabase();
@@ -120,25 +114,27 @@ describe('AUTH API E2E', () => {
       expect(res.body.message).toBe(errorMessages.USER_NOT_VERIFIED);
     });
 
-    // it('should return 429 after 5 login attempts', async () => {
-    //   await testHelper.makeRequestsLimit('/auth/login');
+    it('should return 429 after 5 login attempts', async () => {
+      await testHelper.makeRequestsLimit('/auth/login');
 
-    //   const res = await req.post('/auth/login').send({});
+      const res = await req.post('/auth/login').send({});
 
-    //   expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
-    // });
+      expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+    });
   });
 
   describe('GET /me', () => {
     let token: string;
 
     beforeAll(async () => {
-      const userId = await testHelper.createUserInDb(
-        'user1',
-        'email1@gmail.com',
-      );
+      await testHelper.createUserInDb('user1', 'email1@gmail.com', '123456');
 
-      token = await tokenService.createAccessToken(userId);
+      const loginRes = await testHelper.loginUser({
+        loginOrEmail: 'user1',
+        password: '123456',
+      });
+
+      token = loginRes.accessToken;
     });
 
     afterAll(async () => {
@@ -168,13 +164,11 @@ describe('AUTH API E2E', () => {
   });
 
   describe('POST /registration', () => {
-    beforeEach(() => {
-      testHelper.clearRedis();
+    afterEach(async () => {
+      await testHelper.clearRedis();
     });
-
     afterAll(async () => {
       await testHelper.clearDatabase();
-      testHelper.clearRedis();
     });
 
     it('should return 400 and an error for not unique user', async () => {
@@ -436,9 +430,13 @@ describe('AUTH API E2E', () => {
   });
 
   describe('POST /new-password', () => {
-    // afterEach(async () => {
-    //   await testHelper.clearRedis();
-    // });
+    beforeEach(async () => {
+      await testHelper.clearRedis();
+    });
+
+    afterEach(async () => {
+      await testHelper.clearRedis();
+    });
 
     afterAll(async () => {
       await testHelper.clearDatabase();
@@ -446,12 +444,15 @@ describe('AUTH API E2E', () => {
     });
 
     it('should successfuly update password', async () => {
-      const email = 'email@email.com';
+      const email = 'email22@email.com';
       const code = '1234';
       createCodeMock.mockReturnValue(code);
 
-      await testHelper.createUserInDb('user1', email);
-      await req.post('/auth/password-recovery').send({ email }); // TO UPDATE RECOVERY CODE
+      await testHelper.createUserInDb('user11', email);
+      await req
+        .post('/auth/password-recovery')
+        .send({ email })
+        .expect(HttpStatus.NO_CONTENT); // TO UPDATE RECOVERY CODE
 
       const newPasswordBody = {
         newPassword: 'newPassword1',
@@ -536,13 +537,13 @@ describe('AUTH API E2E', () => {
       }
     });
 
-    // it('should return 429 after 5 password updating attempts', async () => {
-    //   await testHelper.makeRequestsLimit('/auth/new-password');
+    it('should return 429 after 5 password updating attempts', async () => {
+      await testHelper.makeRequestsLimit('/auth/new-password');
 
-    //   const res = await req.post('/auth/new-password').send({});
+      const res = await req.post('/auth/new-password').send({});
 
-    //   expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
-    // });
+      expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+    });
   });
 
   describe('POST /email-resending', () => {
@@ -582,16 +583,18 @@ describe('AUTH API E2E', () => {
   });
 
   describe('POST /email-confirmation', () => {
-    const code = '1234';
+    const code = '12344';
 
     beforeAll(async () => {
       createCodeMock.mockReturnValue(code);
-      await testHelper.registerUser();
+      addDateMock.mockReturnValue(addHours(new Date(), 2));
+
+      await testHelper.registerUser('user12', 'user22@gmail.com');
     });
 
-    // afterEach(async () => {
-    //   await testHelper.clearRedis();
-    // });
+    afterEach(async () => {
+      await testHelper.clearRedis();
+    });
 
     afterAll(async () => {
       await testHelper.clearDatabase();
@@ -654,12 +657,12 @@ describe('AUTH API E2E', () => {
       }
     });
 
-    // it('should return 429 after 5 email confirmation attempts', async () => {
-    //   await testHelper.makeRequestsLimit('/auth/registration-confirmation');
+    it('should return 429 after 5 email confirmation attempts', async () => {
+      await testHelper.makeRequestsLimit('/auth/registration-confirmation');
 
-    //   const res = await req.post('/auth/registration-confirmation').send({});
+      const res = await req.post('/auth/registration-confirmation').send({});
 
-    //   expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
-    // });
+      expect(res.status).toBe(HttpStatus.TOO_MANY_REQUESTS);
+    });
   });
 });

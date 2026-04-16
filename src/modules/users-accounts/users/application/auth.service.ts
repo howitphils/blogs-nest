@@ -76,10 +76,6 @@ export class AuthService {
     const user =
       await this.usersRepository.getUserByConfirmationCodeOrFail(code);
 
-    if (!user) {
-      throw new UserNotFoundError();
-    }
-
     user.confirmEmail();
 
     await this.usersRepository.save(user);

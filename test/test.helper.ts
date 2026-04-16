@@ -10,7 +10,7 @@ import TestAgent from 'supertest/lib/agent';
 import { PostInputDto } from '../src/modules/blogs-platform/posts/api/dto/input/create-post-input.dto';
 import { UserInputDto } from '../src/modules/users-accounts/users/api/dto/input/create-user-input.dto';
 import { LoginInputDto } from '../src/modules/users-accounts/users/api/dto/input/login-user-input.dto';
-import { ThrottlerStorageOptions } from '@nestjs/throttler/dist/throttler-storage-options.interface';
+import { RedisClientType } from 'redis';
 
 // type UserOverridesType = {
 //   accountData?: {
@@ -32,18 +32,15 @@ import { ThrottlerStorageOptions } from '@nestjs/throttler/dist/throttler-storag
 export class TestHelper {
   constructor(
     private req: TestAgent,
-    private throttlerStorage: Map<string, ThrottlerStorageOptions>,
+    private throttlerStorage: RedisClientType,
   ) {}
 
   async clearDatabase() {
     await this.req.delete('/testing/all-data').expect(HttpStatus.NO_CONTENT);
   }
 
-  clearRedis() {
-    // await redisClient.flushDb();
-    console.log(this.throttlerStorage);
-
-    this.throttlerStorage.clear();
+  async clearRedis() {
+    await this.throttlerStorage.flushDb();
   }
 
   makeIncorrectId() {
@@ -250,7 +247,7 @@ export class TestHelper {
       .expect(HttpStatus.OK);
 
     return {
-      accessToken: res.body.accessToken,
+      accessToken: res.body.accessToken as string,
       // cookie: res.headers['set-cookie'][0],
     };
   }
@@ -318,11 +315,11 @@ export class TestHelper {
       .send(dto);
   }
 
-  // async makeRequestsLimit(path: string) {
-  //   for (let i = 1; this.i <= appConfig.REQUEST_LIMIT; i++) {
-  //     await req.post(path).send({}).expect(HttpStatus.BAD_REQUEST);
-  //   }
-  // }
+  async makeRequestsLimit(path: string) {
+    for (let i = 1; i <= 5; i++) {
+      await this.req.post(path).send({}).expect(HttpStatus.BAD_REQUEST);
+    }
+  }
 
   // async getLikedComment(commentId: string, token: string) {
   //   return this.req
