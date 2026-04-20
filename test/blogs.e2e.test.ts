@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { PostForBlogInputDto } from './../src/modules/blogs-platform/posts/api/dto/input/create-posts-for-blog-input.dto';
-import { BlogInputDto } from './../src/modules/blogs-platform/blogs/api/dto/input/create-blog-input.dto';
+import { PostForBlogInputDto } from '../src/modules/blogs-platform/posts/api/dto/input/create-posts-for-blog-input.dto';
+import { BlogInputDto } from '../src/modules/blogs-platform/blogs/api/dto/input/create-blog-input.dto';
 import { describe, it, expect, afterAll, beforeAll } from '@jest/globals';
 import { HttpStatus } from '@nestjs/common';
 import { ErrorResponse } from '../src/modules/core/types/error-response.types';

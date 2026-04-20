@@ -28,6 +28,10 @@ describe('AUTH API E2E', () => {
     addDateMock = jest.spyOn(DateService.prototype, 'addHours');
   });
 
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
   describe('POST /login', () => {
     let userInputDto: UserInputDto;
 

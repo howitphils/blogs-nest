@@ -12,23 +12,6 @@ import { UserInputDto } from '../src/modules/users-accounts/users/api/dto/input/
 import { LoginInputDto } from '../src/modules/users-accounts/users/api/dto/input/login-user-input.dto';
 import { RedisClientType } from 'redis';
 
-// type UserOverridesType = {
-//   accountData?: {
-//     login?: string;
-//     email?: string;
-//     passwordHash?: string;
-//   };
-//   emailConfirmation?: {
-//     confirmationCode?: string;
-//     expDate?: Date;
-//     isConfirmed?: boolean;
-//   };
-//   passwordRecovery?: {
-//     recoveryCode?: string | null;
-//     expDate?: Date;
-//   };
-// };
-
 export class TestHelper {
   constructor(
     private req: TestAgent,
@@ -139,29 +122,6 @@ export class TestHelper {
       password: password ?? '1234567',
     };
   }
-
-  // createDbUser(overrides: UserOverridesType = {}) {
-  //   return {
-  //     accountData: {
-  //       login: `user${Math.random().toFixed(3)}`,
-  //       email: `some-email${Math.random().toFixed(3)}@email.com`,
-  //       createdAt: new Date().toISOString(),
-  //       passwordHash: 'somepasshash',
-  //       ...overrides.accountData,
-  //     },
-  //     emailConfirmation: {
-  //       confirmationCode: randomUUID(),
-  //       expDate: addHours(new Date(), 2),
-  //       isConfirmed: false,
-  //       ...overrides.emailConfirmation,
-  //     },
-  //     passwordRecovery: {
-  //       recoveryCode: null,
-  //       expDate: new Date(),
-  //       ...overrides.passwordRecovery,
-  //     },
-  //   };
-  // }
 
   async createUserInDb(
     login?: string,
