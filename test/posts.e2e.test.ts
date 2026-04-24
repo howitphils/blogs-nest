@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
 import { HttpStatus } from '@nestjs/common';
 import { LikeStatuses } from '../src/modules/core/types/like-statuses.types';
 import { testHelper, req } from './test.setup';

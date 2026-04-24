@@ -15,7 +15,7 @@ import { RedisClientType } from 'redis';
 export class TestHelper {
   constructor(
     private req: TestAgent,
-    private throttlerStorage: RedisClientType,
+    private redisClient: RedisClientType,
   ) {}
 
   async clearDatabase() {
@@ -23,7 +23,7 @@ export class TestHelper {
   }
 
   async clearRedis() {
-    await this.throttlerStorage.flushDb();
+    await this.redisClient.flushDb();
   }
 
   makeIncorrectId() {

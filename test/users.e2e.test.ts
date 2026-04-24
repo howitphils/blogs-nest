@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { HttpStatus } from '@nestjs/common';
 import { testHelper, req } from './test.setup';
 import { defaultPagination } from '../src/modules/core/constants/query-params.constants';
