@@ -139,12 +139,10 @@ export class TestHelper {
     login?: string,
     email?: string,
     password?: string,
-  ): Promise<string> {
+  ): Promise<void> {
     const newUserDto = this.createUserInputDto(login, email, password);
 
-    const res = await this.makePostRequest('/auth/registration', newUserDto);
-
-    return res.body.id;
+    await this.makePostRequest('/auth/registration', newUserDto);
   }
 
   // async countSessions(): Promise<number> {

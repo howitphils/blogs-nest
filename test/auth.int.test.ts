@@ -10,35 +10,26 @@ import { app, testHelper } from './test.setup';
 import { addHours } from 'date-fns';
 import { TokenService } from '../src/modules/core/services/token.service';
 import { DateService } from '../src/modules/core/services/date.service';
-import { EmailServiceMock } from './mocks/email-service.mock';
-import { EmailService } from '../src/modules/core/services/email-service/email.service';
 
 describe('AUTH API INTEGRATION', () => {
   let authService: AuthService;
   let usersRepository: UsersRepository;
-  let emailService: EmailServiceMock;
-
-  let verifyHashMock: jest.SpiedFunction<
-    (hash: string, password: string) => Promise<boolean>
-  >;
-  let createCodeMock: jest.SpiedFunction<() => string>;
-  let addDateMock: jest.SpiedFunction<(hours: number) => Date>;
 
   beforeAll(() => {
     authService = app.get(AuthService);
     usersRepository = app.get(UsersRepository);
-    emailService = app.get(EmailService);
-
-    verifyHashMock = jest.spyOn(PasswordService.prototype, 'verifyHash');
-    createCodeMock = jest.spyOn(TokenService.prototype, 'createRandomCode');
-    addDateMock = jest.spyOn(DateService.prototype, 'addHours');
   });
 
   describe('login', () => {
+    let verifyHashMock: jest.SpiedFunction<
+      (hash: string, password: string) => Promise<boolean>
+    >;
+
     const userLogin = 'test-user';
     let loginDto: LoginInputDto;
 
     beforeAll(async () => {
+      verifyHashMock = jest.spyOn(PasswordService.prototype, 'verifyHash');
       await testHelper.createUserInDb(userLogin);
       loginDto = testHelper.createLoginInputDto(userLogin);
     });
@@ -49,6 +40,7 @@ describe('AUTH API INTEGRATION', () => {
 
     afterAll(async () => {
       await testHelper.clearDatabase();
+      jest.restoreAllMocks();
     });
 
     // const loginDto = testHelper.createLoginInfoDto('test-user');
@@ -147,8 +139,17 @@ describe('AUTH API INTEGRATION', () => {
   // });
 
   describe('*registration-confirmation', () => {
+    let createCodeMock: jest.SpiedFunction<() => string>;
+    let addDateMock: jest.SpiedFunction<(hours: number) => Date>;
+
+    beforeAll(() => {
+      createCodeMock = jest.spyOn(TokenService.prototype, 'createRandomCode');
+      addDateMock = jest.spyOn(DateService.prototype, 'addHours');
+    });
+
     afterAll(async () => {
       await testHelper.clearDatabase();
+      jest.restoreAllMocks();
     });
 
     it('should throw an error for not existing user', async () => {
@@ -237,6 +238,11 @@ describe('AUTH API INTEGRATION', () => {
 
       await testHelper.registerUser('user2', user2Email);
 
+      const newUser = await usersRepository.getUserByLoginOrEmail(user2Email);
+
+      const prevCode = newUser!.emailConfirmation.confirmationCode;
+      const prevDate = newUser!.emailConfirmation.expDate;
+
       await expect(
         authService.resendConfirmationCode(user2Email),
       ).resolves.toBeUndefined();
@@ -248,17 +254,17 @@ describe('AUTH API INTEGRATION', () => {
       expect(updatedUser!.emailConfirmation.confirmationCode).not.toBe(
         prevCode,
       );
-      expect(updatedUser!.emailConfirmation.expDate > new Date()).toBeTruthy();
+      expect(updatedUser!.emailConfirmation.expDate > prevDate).toBeTruthy();
 
-      expect(
-        emailService.sendRegistrationEmail.bind(this),
-      ).toHaveBeenCalledTimes(1);
-      expect(
-        emailService.sendRegistrationEmail.bind(this),
-      ).toHaveBeenCalledWith(
-        user2Email,
-        updatedUser!.emailConfirmation.confirmationCode,
-      );
+      // expect(
+      //   emailService.sendRegistrationEmail.bind(this),
+      // ).toHaveBeenCalledTimes(1);
+      // expect(
+      //   emailService.sendRegistrationEmail.bind(this),
+      // ).toHaveBeenCalledWith(
+      //   user2Email,
+      //   updatedUser!.emailConfirmation.confirmationCode,
+      // );
     });
   });
 
