@@ -256,7 +256,8 @@ export class TestHelper {
     return this.req
       .post(path)
       .set('Authorization', this.getBasicAuthHeader())
-      .send(dto);
+      .send(dto)
+      .expect(201);
   }
 
   // async makePostRequestJwt(path: string, token: string, dto: any) {

@@ -268,102 +268,120 @@ describe('AUTH API INTEGRATION', () => {
     });
   });
 
-  // describe('recover password', () => {
-  //   const email = 'user@gmail.com';
-  //   const recoveryCode = tokenService.createRandomCode(); // To make new recovery code in usersService predictable
-  //   let userId: string;
+  describe('recover password', () => {
+    const email = 'user@gmail.com';
+    const recoveryCode = 'recovery_code_1'; // To make new recovery code in usersService predictable
+    let userId: string;
 
-  //   beforeAll(async () => {
-  //     jest
-  //       .spyOn(TokenService.prototype, 'createRandomCode')
-  //       .mockReturnValue(recoveryCode);
+    beforeAll(async () => {
+      jest
+        .spyOn(TokenService.prototype, 'createRandomCode')
+        .mockReturnValue(recoveryCode);
 
-  //     sendPasswordRecoveryEmailMock.mockResolvedValue();
+      userId = await testHelper.createUserInDb('user1', email);
+    });
 
-  //     userId = await testHelper.createUserInDb({
-  //       accountData: { email },
-  //       emailConfirmation: { isConfirmed: true },
-  //     });
-  //   });
+    afterAll(async () => {
+      await testHelper.clearDatabase();
+    });
 
-  //   afterAll(async () => {
-  //     await testHelper.clearDatabase();
-  //   });
+    it('should resolve with undefined for not existing user', async () => {
+      await expect(
+        authService.recoverPassword('nonexistent@gmail.com'),
+      ).resolves.toBeUndefined();
 
-  //   it('should resolve with undefined for not existing user', async () => {
-  //     await expect(
-  //       usersService.recoverPassword('nonexistent@gmail.com'),
-  //     ).resolves.toBeUndefined();
+      // expect(sendPasswordRecoveryEmailMock).not.toHaveBeenCalled();
+    });
 
-  //     expect(sendPasswordRecoveryEmailMock).not.toHaveBeenCalled();
-  //   });
+    it("should update user's recovery code and expDate", async () => {
+      await expect(authService.recoverPassword(email)).resolves.toBeUndefined();
 
-  //   it("should update user's recovery code and expDate", async () => {
-  //     await expect(
-  //       usersService.recoverPassword(email),
-  //     ).resolves.toBeUndefined();
+      // expect(sendPasswordRecoveryEmailMock).toHaveBeenCalledTimes(1);
+      // expect(sendPasswordRecoveryEmailMock).toHaveBeenCalledWith(
+      //   email,
+      //   recoveryCode,
+      // );
 
-  //     expect(sendPasswordRecoveryEmailMock).toHaveBeenCalledTimes(1);
-  //     expect(sendPasswordRecoveryEmailMock).toHaveBeenCalledWith(
-  //       email,
-  //       recoveryCode,
-  //     );
+      const updatedUser = await usersRepository.getUserByIdOrFail(userId);
 
-  //     const updatedUser = await usersRepository.getUserByIdOrFail(userId);
+      expect(updatedUser.passwordRecovery.recoveryCode).toBe(recoveryCode);
+      expect(updatedUser.passwordRecovery.expDate > new Date()).toBeTruthy();
+    });
+  });
 
-  //     expect(updatedUser.passwordRecovery.recoveryCode).toBe(recoveryCode);
-  //     expect(updatedUser.passwordRecovery.expDate > new Date()).toBeTruthy();
-  //   });
-  // });
+  describe('update password', () => {
+    let createCodeMock: jest.SpiedFunction<() => string>;
+    let addDateMock: jest.SpiedFunction<(hours: number) => Date>;
+    let generateHashMock: jest.SpiedFunction<
+      (password: string) => Promise<string>
+    >;
 
-  // describe('update password', () => {
-  //   beforeAll(() => {
-  //     passwordServiceMock.generateHash.mockResolvedValue('1234');
-  //   });
+    beforeAll(() => {
+      generateHashMock = jest.spyOn(PasswordService.prototype, 'generateHash');
+      createCodeMock = jest.spyOn(TokenService.prototype, 'createRandomCode');
+      addDateMock = jest.spyOn(DateService.prototype, 'addHours');
+    });
 
-  //   afterEach(async () => {
-  //     await testHelper.clearDatabase();
-  //   });
+    afterAll(async () => {
+      await testHelper.clearDatabase();
+    });
 
-  //   it('should throw an error for not existing user', async () => {
-  //     await expect(
-  //       usersService.updatePassword('123456', 'some-code'),
-  //     ).rejects.toThrow(new UserNotFoundError());
-  //   });
+    it('should throw an error for not existing user', async () => {
+      await expect(
+        authService.updatePassword({
+          newPassword: '123561',
+          recoveryCode: 'some-code',
+        }),
+      ).rejects.toThrow(
+        new DomainException(
+          errorMessages.USER_NOT_FOUND,
+          DomainExceptionCode.NOT_FOUND,
+        ),
+      );
+    });
 
-  //   it('should throw an error for expired recovery code', async () => {
-  //     await testHelper.createUserInDb({
-  //       passwordRecovery: {
-  //         recoveryCode: 'code',
-  //         expDate: dateService.addSeconds(-10),
-  //       },
-  //     });
+    it('should throw an error for expired recovery code', async () => {
+      createCodeMock.mockReturnValue('code');
+      addDateMock.mockReturnValue(new Date());
+      generateHashMock.mockResolvedValue('some-hash');
 
-  //     await expect(
-  //       usersService.updatePassword('123456', 'code'),
-  //     ).rejects.toThrow(
-  //       new BadRequestError('Recovery code is already expired'),
-  //     );
-  //   });
+      await testHelper.createUserInDb('user1', 'email@emai22.com');
 
-  //   it('should successfully update password hash and reset password recovery info', async () => {
-  //     const userId = await testHelper.createUserInDb({
-  //       accountData: { passwordHash: 'old-hash' },
-  //       passwordRecovery: {
-  //         recoveryCode: 'code2',
-  //         expDate: dateService.addHours(2),
-  //       },
-  //     });
+      await expect(
+        authService.updatePassword({
+          newPassword: '123432',
+          recoveryCode: 'code',
+        }),
+      ).rejects.toThrow(
+        new DomainException(
+          errorMessages.RECOVERY_CODE_EXPIRED,
+          DomainExceptionCode.BAD_REQUEST,
+        ),
+      );
+    });
 
-  //     await expect(
-  //       usersService.updatePassword('123456', 'code2'),
-  //     ).resolves.toBeUndefined();
+    it('should successfully update password hash and reset password recovery info', async () => {
+      createCodeMock.mockReturnValue('code2');
+      addDateMock.mockReturnValue(addHours(new Date(), 2));
+      generateHashMock.mockResolvedValue('old-hash');
 
-  //     const user = await usersRepository.getUserByIdOrFail(userId);
+      const userId = await testHelper.createUserInDb(
+        'user2',
+        'email@emai222l.com',
+      );
 
-  //     expect(user.accountData.passwordHash).not.toBe('old-hash');
-  //     expect(user.passwordRecovery.recoveryCode).toBeNull();
-  //     expect(user.passwordRecovery.expDate < new Date()).toBeTruthy();
-  //   });
-  // });
+      await expect(
+        authService.updatePassword({
+          newPassword: '123456',
+          recoveryCode: 'code2',
+        }),
+      ).resolves.toBeUndefined();
+
+      const user = await usersRepository.getUserByIdOrFail(userId);
+
+      expect(user.accountData.passwordHash).not.toBe('old-hash');
+      expect(user.passwordRecovery.recoveryCode).toBeNull();
+      expect(user.passwordRecovery.expDate < new Date()).toBeTruthy();
+    });
+  });
 });
